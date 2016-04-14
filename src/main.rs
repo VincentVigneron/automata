@@ -12,7 +12,7 @@ fn main() {
          c 0 3\n\
          b 1 2\n\
          a 2 1\n\
-         c 2 3";
+         c 2 3\n";
     match DFA::new_from_file(&model) {
         Ok(d) => {
             let dfa = d;
