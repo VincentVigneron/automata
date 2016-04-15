@@ -1,14 +1,14 @@
 extern crate itertools;
 
 use std::collections::{HashSet,HashMap};
-use self::itertools::Itertools;
-use std::fmt;
-use std::error;
-use std::io;
-use std::num;
-use std::fs::File;
+use self::itertools::Itertools;        // fold_results
+use std::io;                           // Error
+use std::io::{Read,BufReader,BufRead}; // read_to_string
 use std::path::Path;
-use std::io::Read;
+use std::num;                          // ParseIntError
+use std::fmt;                          // Formatter, format!, Display, Debug, write!
+use std::error;
+use std::fs::File;                     // File, open
 
 // TODO "readm.mk"
 // TODO documentation
@@ -89,39 +89,30 @@ impl DFA {
     }
 
     pub fn new_from_file<P: AsRef<Path>>(file_path: P) -> Result<DFA, DFAError> {
-        let mut file = try!(File::open(file_path));
-        let mut contents = String::new();
-        try!(file.read_to_string(&mut contents));
-        DFA::new_from_string(&*contents)
+        let file = try!(File::open(file_path));
+        let file = BufReader::new(file);
+        DFA::new_from_lines(&mut file.lines())
     }
 
-    // TODO test if the tranisiton start with two symbols instead of one
-    pub fn new_from_string(file: &str) -> Result<DFA, DFAError> {
+    pub fn new_from_lines(lines : &mut Iterator<Item=io::Result<String>>) -> Result<DFA, DFAError> {
+        let lines = lines.map(|line| line.unwrap());
         let mut dfa = DFA::new();
-        // lines iterates over the non-empty lines.
-        let mut lines = file
-            .lines()
+        let mut lines = lines
             .enumerate()
             // split always return one element even if it's an empty string
-            .map(|(nline,line)| (nline+1,line.split('#').nth(0).unwrap().trim()))
-            .filter(|&(_,line)| !line.is_empty());
+            .map(|(nline,line)| (nline+1,line.split('#').nth(0).unwrap().trim().to_owned()))
+            .filter(|&(_,ref line)| !line.is_empty());
         dfa.start = try!(lines
             .next()
             .ok_or(DFAError::MissingStartingState)
-            .and_then(|(nline,contents)| DFA::parse_dfa_error(contents,nline)));
-        dfa.finals = try!(lines
-            .next()
-            .ok_or(DFAError::MissingFinalStates)
-            .and_then(|(nline,contents)| Ok((nline,contents.split_whitespace())))
-            // need to move the closure inside the make to create a copy of nline for
-            // th closure stack frame, otherwise the compiler can't guarantee that the
-            // lifetime of the closure won't exceed the lifetime of nline.
-            .and_then(|(nline,contents)| Ok((nline,contents.map(move |token| DFA::parse_dfa_error(token,nline)))))
-            .and_then(|(_, mut contents)| {
-                contents.fold_results(HashSet::new(),|mut acc,elt| {
-                    acc.insert(elt);
-                    acc
-                })
+            .and_then(|(nline,contents)| DFA::parse_dfa_error(&&contents,nline)));
+        let (nline,contents) = try!(lines.next().ok_or(DFAError::MissingFinalStates));
+        dfa.finals = try!(contents
+            .split_whitespace()
+            .map(|token| DFA::parse_dfa_error(token,nline))
+            .fold_results(HashSet::new(), |mut acc, elt| {
+                acc.insert(elt);
+                acc
             }));
         for (nline,line) in lines {
             let mut tokens = line.split_whitespace();
@@ -141,6 +132,11 @@ impl DFA {
             dfa.transitions.insert((symb,src), dest);
         }
         Ok(dfa)
+    }
+
+    // TODO test if the tranisiton start with two symbols instead of one
+    pub fn new_from_string(file: &str) -> Result<DFA, DFAError> {
+        DFA::new_from_lines(&mut file.lines().map(|line| Ok(line.to_string())))
     }
 
     // TODO return the position of the first match
