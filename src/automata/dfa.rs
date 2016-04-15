@@ -112,7 +112,7 @@ impl DFA {
             .filter(|&(_,ref line):&(usize,io::Result<String>)| {
                 // Mandatory otherwise unwrap will take the ownership of the String
                 let line = line.as_ref();
-                !line.is_ok() && line.unwrap().is_empty()
+                line.is_err() || !line.unwrap().is_empty()
             });
         let (nline,line) = try!(lines
             .next()
