@@ -102,7 +102,8 @@ impl DFA {
         let mut lines = file
             .lines()
             .enumerate()
-            .map(|(nline,line)| (nline+1,line.trim()))
+            // split always return one element even if it's an empty string
+            .map(|(nline,line)| (nline+1,line.split('#').nth(0).unwrap().trim()))
             .filter(|&(_,line)| !line.is_empty());
         dfa.start = try!(lines
             .next()

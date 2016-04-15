@@ -1,7 +1,8 @@
-0
-3
-a 0 1
-c 0 3
-b 1 2
-a 2 1
-c 2 3
+# (ab)*c
+0     # starting state
+3     # final state
+a 0 1 # delta((a,0)) = 1
+c 0 3 # delta((c,0)) = 3
+b 1 2 # delta((b,1)) = 2
+a 2 1 # delta((a,2)) = 1
+c 2 3 # delta((c,2)) = 3
