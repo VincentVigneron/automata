@@ -10,6 +10,9 @@ use std::fs::File;
 use std::path::Path;
 use std::io::Read;
 
+// TODO "readm.mk"
+// TODO documentation
+// TODO read from an iterator
 // TODO error for duplicated transitions
 #[derive(Debug)]
 pub enum DFAError {
@@ -93,7 +96,6 @@ impl DFA {
     }
 
     // TODO test if the tranisiton start with two symbols instead of one
-    // TODO read from a "File"
     pub fn new_from_string(file: &str) -> Result<DFA, DFAError> {
         let mut dfa = DFA::new();
         // lines iterates over the non-empty lines.
@@ -124,7 +126,6 @@ impl DFA {
             let mut tokens = line.split_whitespace();
             // can't fail because lines iterates over the non-empty line
             let symb = tokens.next().unwrap().chars().nth(0).unwrap();
-            println!("{}", nline);
             let src = try!(tokens
                 .next()
                 .ok_or(DFAError::IncompleteTransition(nline))
@@ -190,7 +191,7 @@ mod tests {
              b 1 2\n\
              a 2 1\n\
              c 2 3";
-        let dfa = DFA::new_from_file(&model).unwrap();
+        let dfa = DFA::new_from_string(&model).unwrap();
         let samples =
             vec![("ababac", false),
                  ("ababc", true),
@@ -209,7 +210,7 @@ mod tests {
     fn test_empty_file() {
         let model =
             "";
-        match DFA::new_from_file(model) {
+        match DFA::new_from_string(model) {
             Err(DFAError::MissingStartingState) => assert!(true),
             _ => assert!(false, "Missing state expected."),
         }
@@ -219,7 +220,7 @@ mod tests {
     fn test_start_not_a_number() {
         let model =
             "a";
-        match DFA::new_from_file(model) {
+        match DFA::new_from_string(model) {
             Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 1),
             _ => assert!(false, "Parsing error."),
         }
@@ -235,7 +236,7 @@ mod tests {
              b 1 2\n\
              a 2 1\n\
              c 2 3";
-        match DFA::new_from_file(model) {
+        match DFA::new_from_string(model) {
             Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 1),
             _ => assert!(false, "Parsing error."),
         }
@@ -246,7 +247,7 @@ mod tests {
         let model =
             "1\n\
             ";
-        match DFA::new_from_file(model) {
+        match DFA::new_from_string(model) {
             Err(DFAError::MissingFinalStates) => assert!(true),
             _ => assert!(false, "Missing final states expected."),
         }
@@ -257,7 +258,7 @@ mod tests {
         let model =
             "1\n\
              2 a 3";
-        match DFA::new_from_file(model) {
+        match DFA::new_from_string(model) {
             Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 2),
             _ => assert!(false, "Parsing error."),
         }
@@ -268,7 +269,7 @@ mod tests {
         let model =
             "0\n\
              3";
-        let _dfa = DFA::new_from_file(&model).unwrap();
+        let _dfa = DFA::new_from_string(&model).unwrap();
     }
 
     #[test]
@@ -277,7 +278,7 @@ mod tests {
             "0\n\
              3\n\
              a 0 1 8";
-        match DFA::new_from_file(model) {
+        match DFA::new_from_string(model) {
             Err(DFAError::IllformedTransition(line)) => assert!(line == 3),
             _ => assert!(false, "IllformedTransition expected."),
         }
@@ -290,7 +291,7 @@ mod tests {
             "0\n\
              3\n\
              ab 2 3";
-        let _dfa = DFA::new_from_file(&model).unwrap();
+        let _dfa = DFA::new_from_string(&model).unwrap();
     }
 
     #[test]
@@ -299,7 +300,7 @@ mod tests {
             "0\n\
              3\n\
              c b 3";
-        match DFA::new_from_file(model) {
+        match DFA::new_from_string(model) {
             Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 3),
             _ => assert!(false, "Parsing error."),
         }
@@ -311,7 +312,7 @@ mod tests {
             "0\n\
              3\n\
              c 2 b";
-        match DFA::new_from_file(model) {
+        match DFA::new_from_string(model) {
             Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 3),
             _ => assert!(false, "Parsing error."),
         }
