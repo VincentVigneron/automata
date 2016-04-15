@@ -4,23 +4,27 @@ use std::collections::{HashSet,HashMap};
 use self::itertools::Itertools;
 use std::fmt;
 use std::error;
+use std::io;
 use std::num;
+use std::fs::File;
+use std::path::Path;
+use std::io::Read;
 
-// TODO remove the Option after the add of specific erros
+// TODO error for duplicated transitions
 #[derive(Debug)]
 pub enum DFAError {
     MissingStartingState,
     MissingFinalStates,
     IncompleteTransition(usize),
     IllformedTransition(usize),
-    Io(String,Option<usize>),
+    Io(io::Error),
     Parse(num::ParseIntError,Option<usize>),
 }
 
 impl fmt::Display for DFAError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            DFAError::Io(ref err,ref line) => write!(f, "IO error on line {:?}: {}", line, err),
+            DFAError::Io(ref err) => write!(f, "IO error: {}", err),
             DFAError::MissingStartingState => write!(f, "The file is empty or only contains white characters."),
             DFAError::MissingFinalStates => write!(f, "The file does not specify the list of final states."),
             DFAError::IncompleteTransition(ref line) => write!(f, "Line {}: missing the src or the dest state.", line),
@@ -33,31 +37,28 @@ impl fmt::Display for DFAError {
 impl error::Error for DFAError {
     fn description(&self) -> &str {
         match *self {
-            DFAError::Io(ref err,ref _line) => err,
+            DFAError::Io(ref err) => err.description(),
             DFAError::MissingStartingState => "The file is empty or only contains white characters.",
             DFAError::MissingFinalStates => "The file does not specify the list of final states.",
-            DFAError::IncompleteTransition(ref _line) => "TODO", //format!("Line {}: missing the src or the dest state.", line),
-            DFAError::IllformedTransition(ref _line) => "TODO", //format!("Line {}: missing the src or the dest state.", line),
-            DFAError::Parse(ref err,ref _line) => err.description(),
+            DFAError::IncompleteTransition(_) => "Missing the src or the dest state.",
+            DFAError::IllformedTransition(_) => "Too much elements",
+            DFAError::Parse(ref err,_) => err.description(),
         }
     }
 
 
     fn cause(&self) -> Option<&error::Error> {
         match *self {
-            DFAError::Io(ref _err,ref _line) => Some(self),
-            DFAError::MissingStartingState => Some(self),
-            DFAError::MissingFinalStates => Some(self),
-            DFAError::IncompleteTransition(_) => Some(self),
-            DFAError::IllformedTransition(_) => Some(self),
-            DFAError::Parse(ref err,ref _line) => Some(err),
+            DFAError::Io(ref err) => Some(err),
+            DFAError::Parse(ref err,_) => Some(err),
+            _ => None,
         }
     }
 }
 
-impl From<String> for DFAError {
-    fn from(err: String) -> DFAError {
-        DFAError::Io(err,None)
+impl From<io::Error> for DFAError {
+    fn from(err: io::Error) -> DFAError {
+        DFAError::Io(err)
     }
 }
 
@@ -84,9 +85,16 @@ impl DFA {
                     .map_err(|e| DFAError::Parse(e,Some(line)))
     }
 
+    pub fn new_from_file<P: AsRef<Path>>(file_path: P) -> Result<DFA, DFAError> {
+        let mut file = try!(File::open(file_path));
+        let mut contents = String::new();
+        try!(file.read_to_string(&mut contents));
+        DFA::new_from_string(&*contents)
+    }
+
     // TODO test if the tranisiton start with two symbols instead of one
     // TODO read from a "File"
-    pub fn new_from_file(file: &str) -> Result<DFA, DFAError> {
+    pub fn new_from_string(file: &str) -> Result<DFA, DFAError> {
         let mut dfa = DFA::new();
         // lines iterates over the non-empty lines.
         let mut lines = file
@@ -306,6 +314,15 @@ mod tests {
         match DFA::new_from_file(model) {
             Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 3),
             _ => assert!(false, "Parsing error."),
+        }
+    }
+
+    #[test]
+    fn test_read_from_fake_file() {
+        let file = "fake.txt";
+        match DFA::new_from_file(file) {
+            Err(DFAError::Io(_)) => assert!(true),
+            _ => assert!(false, "Io::Error expected."),
         }
     }
 }
