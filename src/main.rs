@@ -3,6 +3,7 @@ extern crate automata;
 //use std::process;
 use automata::automata::dfa::*;
 
+// add empty comment
 fn main() {
     // (ab)*c
     let model =
