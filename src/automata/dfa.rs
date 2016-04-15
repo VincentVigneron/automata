@@ -97,31 +97,21 @@ impl DFA {
     fn new_from_lines(lines : &mut Iterator<Item=io::Result<String>>) -> Result<DFA, DFAError> {
         let mut dfa = DFA::new();
         let mut lines = lines
-            .enumerate()
-            .map(|(nline,line)| {
-                let line = match line {
-                    Ok(contents) => {
-                        // split always return one element even if it's an empty string
-                        let contents = contents.split('#').nth(0).unwrap().trim().to_owned();
-                        Ok(contents)
-                    },
-                    io_err => io_err,
-                };
-                (nline+1,line)
+            .map(|line| {
+                line.and_then(|contents| Ok(contents.split('#').nth(0).unwrap().trim().to_owned()))
             })
-            .filter(|&(_,ref line):&(usize,io::Result<String>)| {
+            .enumerate().map(|(nline,line)| (nline+1,line))
+            .filter(|&(_,ref line)| {
                 // Mandatory otherwise unwrap will take the ownership of the String
                 let line = line.as_ref();
                 line.is_err() || !line.unwrap().is_empty()
             });
-        let (nline,line) = try!(lines
-            .next()
-            .ok_or(DFAError::MissingStartingState));
+        // Starting state
+        let (nline,line) = try!(lines.next().ok_or(DFAError::MissingStartingState));
         let line = try!(line);
         dfa.start = try!(DFA::parse_dfa_error(&line,nline));
-        let (nline,line) = try!(lines
-            .next()
-            .ok_or(DFAError::MissingFinalStates));
+        // Final states
+        let (nline,line) = try!(lines.next().ok_or(DFAError::MissingFinalStates));
         let line = try!(line);
         dfa.finals = try!(line
             .split_whitespace()
