@@ -5,15 +5,8 @@ use automata::automata::dfa::*;
 
 fn main() {
     // (ab)*c
-    let model =
-        "0\n\
-         3\n\
-         a 0 1\n\
-         c 0 3\n\
-         b 1 2\n\
-         a 2 1\n\
-         c 2 3";
-    match DFA::new_from_file(&model) {
+    let file = "data/dfa1.txt";
+    match DFA::new_from_file(file) {
         Ok(d) => {
             let dfa = d;
             println!("{}", dfa);
