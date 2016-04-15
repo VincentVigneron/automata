@@ -29,6 +29,7 @@ impl fmt::Display for DFAError {
         }
     }
 }
+
 impl error::Error for DFAError {
     fn description(&self) -> &str {
         match *self {
@@ -66,6 +67,7 @@ impl From<num::ParseIntError> for DFAError {
     }
 }
 
+#[derive(Debug)]
 pub struct DFA {
     transitions : HashMap<(char,usize),usize>,
     start       : usize,
@@ -82,6 +84,7 @@ impl DFA {
                     .map_err(|e| DFAError::Parse(e,Some(line)))
     }
 
+    // TODO test if the tranisiton start with two symbols instead of one
     // TODO read from a "File"
     pub fn new_from_file(file: &str) -> Result<DFA, DFAError> {
         let mut dfa = DFA::new();
@@ -113,6 +116,7 @@ impl DFA {
             let mut tokens = line.split_whitespace();
             // can't fail because lines iterates over the non-empty line
             let symb = tokens.next().unwrap().chars().nth(0).unwrap();
+            println!("{}", nline);
             let src = try!(tokens
                 .next()
                 .ok_or(DFAError::IncompleteTransition(nline))
@@ -194,23 +198,26 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     fn test_empty_file() {
         let model =
             "";
-        let _dfa = DFA::new_from_file(&model).unwrap();
+        match DFA::new_from_file(model) {
+            Err(DFAError::MissingStartingState) => assert!(true),
+            _ => assert!(false, "Missing state expected."),
+        }
     }
 
     #[test]
-    #[should_panic]
     fn test_start_not_a_number() {
         let model =
             "a";
-        let _dfa = DFA::new_from_file(&model).unwrap();
+        match DFA::new_from_file(model) {
+            Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 1),
+            _ => assert!(false, "Parsing error."),
+        }
     }
 
     #[test]
-    #[should_panic]
     fn test_many_starts() {
         let model =
             "0 1\n\
@@ -220,25 +227,32 @@ mod tests {
              b 1 2\n\
              a 2 1\n\
              c 2 3";
-        let _dfa = DFA::new_from_file(&model).unwrap();
+        match DFA::new_from_file(model) {
+            Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 1),
+            _ => assert!(false, "Parsing error."),
+        }
     }
 
     #[test]
-    #[should_panic]
     fn test_no_finals() {
         let model =
             "1\n\
             ";
-        let _dfa = DFA::new_from_file(&model).unwrap();
+        match DFA::new_from_file(model) {
+            Err(DFAError::MissingFinalStates) => assert!(true),
+            _ => assert!(false, "Missing final states expected."),
+        }
     }
 
     #[test]
-    #[should_panic]
     fn test_finals_not_a_number() {
         let model =
             "1\n\
              2 a 3";
-        let _dfa = DFA::new_from_file(&model).unwrap();
+        match DFA::new_from_file(model) {
+            Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 2),
+            _ => assert!(false, "Parsing error."),
+        }
     }
 
     #[test]
@@ -250,42 +264,48 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     fn test_transitions_with_at_least_four_elements() {
         let model =
-            "0 1\n\
+            "0\n\
              3\n\
              a 0 1 8";
-        let _dfa = DFA::new_from_file(&model).unwrap();
+        match DFA::new_from_file(model) {
+            Err(DFAError::IllformedTransition(line)) => assert!(line == 3),
+            _ => assert!(false, "IllformedTransition expected."),
+        }
     }
 
     #[test]
     #[should_panic]
     fn test_transitions_start_with_at_least_two_chars() {
         let model =
-            "0 1\n\
+            "0\n\
              3\n\
              ab 2 3";
         let _dfa = DFA::new_from_file(&model).unwrap();
     }
 
     #[test]
-    #[should_panic]
     fn test_transitions_with_src_not_a_number() {
         let model =
-            "0 1\n\
+            "0\n\
              3\n\
              c b 3";
-        let _dfa = DFA::new_from_file(&model).unwrap();
+        match DFA::new_from_file(model) {
+            Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 3),
+            _ => assert!(false, "Parsing error."),
+        }
     }
 
     #[test]
-    #[should_panic]
     fn test_transitions_with_dest_not_a_number() {
         let model =
-            "0 1\n\
+            "0\n\
              3\n\
              c 2 b";
-        let _dfa = DFA::new_from_file(&model).unwrap();
+        match DFA::new_from_file(model) {
+            Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 3),
+            _ => assert!(false, "Parsing error."),
+        }
     }
 }
