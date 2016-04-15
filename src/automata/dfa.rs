@@ -94,6 +94,7 @@ impl DFA {
         DFA::new_from_lines(&mut file.lines())
     }
 
+    // TODO remove first line
     pub fn new_from_lines(lines : &mut Iterator<Item=io::Result<String>>) -> Result<DFA, DFAError> {
         let lines = lines.map(|line| line.unwrap());
         let mut dfa = DFA::new();
