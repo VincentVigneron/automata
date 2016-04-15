@@ -6,11 +6,13 @@ use std::fmt;
 use std::error;
 use std::num;
 
-// TODO add specific errors
-// TODO add the line in the error
 // TODO remove the Option after the add of specific erros
 #[derive(Debug)]
 pub enum DFAError {
+    MissingStartingState,
+    MissingFinalStates,
+    IncompleteTransition(usize),
+    IllformedTransition(usize),
     Io(String,Option<usize>),
     Parse(num::ParseIntError,Option<usize>),
 }
@@ -19,6 +21,10 @@ impl fmt::Display for DFAError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             DFAError::Io(ref err,ref line) => write!(f, "IO error on line {:?}: {}", line, err),
+            DFAError::MissingStartingState => write!(f, "The file is empty or only contains white characters."),
+            DFAError::MissingFinalStates => write!(f, "The file does not specify the list of final states."),
+            DFAError::IncompleteTransition(ref line) => write!(f, "Line {}: missing the src or the dest state.", line),
+            DFAError::IllformedTransition(ref line) => write!(f, "Line {}: too much elements.", line),
             DFAError::Parse(ref err,ref line) => write!(f, "Parse error on line {:?}: {}", line, err),
         }
     }
@@ -27,6 +33,10 @@ impl error::Error for DFAError {
     fn description(&self) -> &str {
         match *self {
             DFAError::Io(ref err,ref _line) => err,
+            DFAError::MissingStartingState => "The file is empty or only contains white characters.",
+            DFAError::MissingFinalStates => "The file does not specify the list of final states.",
+            DFAError::IncompleteTransition(ref _line) => "TODO", //format!("Line {}: missing the src or the dest state.", line),
+            DFAError::IllformedTransition(ref _line) => "TODO", //format!("Line {}: missing the src or the dest state.", line),
             DFAError::Parse(ref err,ref _line) => err.description(),
         }
     }
@@ -35,6 +45,10 @@ impl error::Error for DFAError {
     fn cause(&self) -> Option<&error::Error> {
         match *self {
             DFAError::Io(ref _err,ref _line) => Some(self),
+            DFAError::MissingStartingState => Some(self),
+            DFAError::MissingFinalStates => Some(self),
+            DFAError::IncompleteTransition(_) => Some(self),
+            DFAError::IllformedTransition(_) => Some(self),
             DFAError::Parse(ref err,ref _line) => Some(err),
         }
     }
@@ -69,9 +83,6 @@ impl DFA {
     }
 
     // TODO read from a "File"
-    // TODO use specific erros
-    // TODO remove string inside erro
-    // TODO remove string for error desciption
     pub fn new_from_file(file: &str) -> Result<DFA, DFAError> {
         let mut dfa = DFA::new();
         // lines iterates over the non-empty lines.
@@ -82,11 +93,11 @@ impl DFA {
             .filter(|&(_,line)| !line.is_empty());
         dfa.start = try!(lines
             .next()
-            .ok_or(DFAError::Io("The file does not contain the starting state.".to_owned(),None))
+            .ok_or(DFAError::MissingStartingState)
             .and_then(|(nline,contents)| DFA::parse_dfa_error(contents,nline)));
         dfa.finals = try!(lines
             .next()
-            .ok_or(DFAError::Io("The file does not contain the list of finals state.".to_owned(),None))
+            .ok_or(DFAError::MissingFinalStates)
             .and_then(|(nline,contents)| Ok((nline,contents.split_whitespace())))
             // need to move the closure inside the make to create a copy of nline for
             // th closure stack frame, otherwise the compiler can't guarantee that the
@@ -100,24 +111,18 @@ impl DFA {
             }));
         for (nline,line) in lines {
             let mut tokens = line.split_whitespace();
-            let symb = try!(tokens
-                .next()
-                .ok_or(DFAError::Io("Should not happen.".to_owned(),Some(nline)))
-                .and_then(|contents| {
-                    contents.chars()
-                            .nth(0)
-                            .ok_or(DFAError::Io("Should not happen.".to_owned(),Some(nline)))
-                }));
+            // can't fail because lines iterates over the non-empty line
+            let symb = tokens.next().unwrap().chars().nth(0).unwrap();
             let src = try!(tokens
                 .next()
-                .ok_or(DFAError::Io("The transition line does not contain the src state.".to_owned(),Some(nline)))
+                .ok_or(DFAError::IncompleteTransition(nline))
                 .and_then(|contents| DFA::parse_dfa_error(contents,nline)));
             let dest = try!(tokens
                 .next()
-                .ok_or(DFAError::Io("The transition line does not contain the dest state.".to_owned(),Some(nline)))
+                .ok_or(DFAError::IncompleteTransition(nline))
                 .and_then(|contents| DFA::parse_dfa_error(contents,nline)));
             if tokens.next().is_some() {
-                return Err(DFAError::Io("Too much elements on the transition line.".to_owned(),Some(nline)));
+                return Err(DFAError::IllformedTransition(nline));
             }
             dfa.transitions.insert((symb,src), dest);
         }
