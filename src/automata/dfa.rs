@@ -12,7 +12,6 @@ use std::fs::File;                     // File, open
 
 // TODO "readm.mk"
 // TODO documentation
-// TODO read from an iterator
 // TODO error for duplicated transitions
 #[derive(Debug)]
 pub enum DFAError {
@@ -94,21 +93,37 @@ impl DFA {
         DFA::new_from_lines(&mut file.lines())
     }
 
-    // TODO remove first line
-    pub fn new_from_lines(lines : &mut Iterator<Item=io::Result<String>>) -> Result<DFA, DFAError> {
-        let lines = lines.map(|line| line.unwrap());
+    // TODO test if the tranisiton start with two symbols instead of one
+    fn new_from_lines(lines : &mut Iterator<Item=io::Result<String>>) -> Result<DFA, DFAError> {
         let mut dfa = DFA::new();
         let mut lines = lines
             .enumerate()
-            // split always return one element even if it's an empty string
-            .map(|(nline,line)| (nline+1,line.split('#').nth(0).unwrap().trim().to_owned()))
-            .filter(|&(_,ref line)| !line.is_empty());
-        dfa.start = try!(lines
+            .map(|(nline,line)| {
+                let line = match line {
+                    Ok(contents) => {
+                        // split always return one element even if it's an empty string
+                        let contents = contents.split('#').nth(0).unwrap().trim().to_owned();
+                        Ok(contents)
+                    },
+                    io_err => io_err,
+                };
+                (nline+1,line)
+            })
+            .filter(|&(_,ref line):&(usize,io::Result<String>)| {
+                // Mandatory otherwise unwrap will take the ownership of the String
+                let line = line.as_ref();
+                !line.is_ok() && line.unwrap().is_empty()
+            });
+        let (nline,line) = try!(lines
             .next()
-            .ok_or(DFAError::MissingStartingState)
-            .and_then(|(nline,contents)| DFA::parse_dfa_error(&&contents,nline)));
-        let (nline,contents) = try!(lines.next().ok_or(DFAError::MissingFinalStates));
-        dfa.finals = try!(contents
+            .ok_or(DFAError::MissingStartingState));
+        let line = try!(line);
+        dfa.start = try!(DFA::parse_dfa_error(&line,nline));
+        let (nline,line) = try!(lines
+            .next()
+            .ok_or(DFAError::MissingFinalStates));
+        let line = try!(line);
+        dfa.finals = try!(line
             .split_whitespace()
             .map(|token| DFA::parse_dfa_error(token,nline))
             .fold_results(HashSet::new(), |mut acc, elt| {
@@ -116,6 +131,7 @@ impl DFA {
                 acc
             }));
         for (nline,line) in lines {
+            let line = try!(line);
             let mut tokens = line.split_whitespace();
             // can't fail because lines iterates over the non-empty line
             let symb = tokens.next().unwrap().chars().nth(0).unwrap();
@@ -135,7 +151,6 @@ impl DFA {
         Ok(dfa)
     }
 
-    // TODO test if the tranisiton start with two symbols instead of one
     pub fn new_from_string(file: &str) -> Result<DFA, DFAError> {
         DFA::new_from_lines(&mut file.lines().map(|line| Ok(line.to_string())))
     }
