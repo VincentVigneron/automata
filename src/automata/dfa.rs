@@ -10,15 +10,15 @@ use std::fmt;                          // Formatter, format!, Display, Debug, wr
 use std::error;
 use std::fs::File;                     // File, open
 
-// TODO "readm.mk"
+// TODO "readme.mk"
 // TODO documentation
-// TODO error for duplicated transitions
 #[derive(Debug)]
 pub enum DFAError {
     MissingStartingState,
     MissingFinalStates,
     IncompleteTransition(usize),
     IllformedTransition(usize),
+    DuplicatedTransition(usize),
     Io(io::Error),
     Parse(num::ParseIntError,Option<usize>),
 }
@@ -31,6 +31,7 @@ impl fmt::Display for DFAError {
             DFAError::MissingFinalStates => write!(f, "The file does not specify the list of final states."),
             DFAError::IncompleteTransition(ref line) => write!(f, "Line {}: missing the src or the dest state.", line),
             DFAError::IllformedTransition(ref line) => write!(f, "Line {}: too much elements.", line),
+            DFAError::DuplicatedTransition(ref line) => write!(f, "Line {}: duplicated transition.", line),
             DFAError::Parse(ref err,ref line) => write!(f, "Parse error on line {:?}: {}", line, err),
         }
     }
@@ -43,7 +44,8 @@ impl error::Error for DFAError {
             DFAError::MissingStartingState => "The file is empty or only contains white characters.",
             DFAError::MissingFinalStates => "The file does not specify the list of final states.",
             DFAError::IncompleteTransition(_) => "Missing the src or the dest state.",
-            DFAError::IllformedTransition(_) => "Too much elements",
+            DFAError::IllformedTransition(_) => "Too much elements.",
+            DFAError::DuplicatedTransition(_) => "Duplicated transition.",
             DFAError::Parse(ref err,_) => err.description(),
         }
     }
@@ -93,7 +95,6 @@ impl DFA {
         DFA::new_from_lines(&mut file.lines())
     }
 
-    // TODO test if the tranisiton start with two symbols instead of one
     fn new_from_lines(lines : &mut Iterator<Item=io::Result<String>>) -> Result<DFA, DFAError> {
         let mut dfa = DFA::new();
         let mut lines = lines
@@ -124,7 +125,11 @@ impl DFA {
             let line = try!(line);
             let mut tokens = line.split_whitespace();
             // can't fail because lines iterates over the non-empty line
-            let symb = tokens.next().unwrap().chars().nth(0).unwrap();
+            let mut symbs = tokens.next().unwrap().chars();
+            let symb = symbs.nth(0).unwrap();
+            if symbs.next().is_some() {
+                return Err(DFAError::IllformedTransition(nline));
+            }
             let src = try!(tokens
                 .next()
                 .ok_or(DFAError::IncompleteTransition(nline))
@@ -136,7 +141,9 @@ impl DFA {
             if tokens.next().is_some() {
                 return Err(DFAError::IllformedTransition(nline));
             }
-            dfa.transitions.insert((symb,src), dest);
+            if dfa.transitions.insert((symb,src), dest).is_some() {
+                return Err(DFAError::DuplicatedTransition(nline));
+            }
         }
         Ok(dfa)
     }
@@ -179,7 +186,6 @@ impl fmt::Display for DFA {
     }
 }
 
-// TODO add specific error analysis
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -318,6 +324,19 @@ mod tests {
         match DFA::new_from_string(model) {
             Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 3),
             _ => assert!(false, "Parsing error."),
+        }
+    }
+
+    #[test]
+    fn test_duplicated_transition() {
+        let model =
+            "0\n\
+             3\n\
+             c 2 3\n\
+             c 2 4";
+        match DFA::new_from_string(model) {
+            Err(DFAError::DuplicatedTransition(line)) => assert!(line == 4),
+            _ => assert!(false, "DuplicatedTransition expected."),
         }
     }
 
