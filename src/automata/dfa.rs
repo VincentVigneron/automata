@@ -79,6 +79,48 @@ pub struct DFA {
     finals      : HashSet<usize>,
 }
 
+#[derive(Debug)]
+pub struct DFABuilder {
+    transitions : Result<HashMap<(char,usize),usize>, DFAError>,
+    start       : usize,
+    finals      : HashSet<usize>,
+}
+
+/*
+impl DFABuilder {
+    pub fn new() -> DFABuilder {
+        DFABuilder{transitions: Ok(HashMap::new()), start: 0, finals: HashSet::new()}
+    }
+
+    pub fn starting(mut self, start: usize) -> DFABuilder {
+        self.start = start;
+        self
+    }
+
+    pub fn add_finals(mut self, finals: usize) -> DFABuilder {
+        self.finals.insert(finals);
+        self
+    }
+
+    pub fn add_transition(mut self, sym: char, src: usize, dest: usize) -> DFABuilder {
+        match self.transitions {
+            Ok(ref mut tr) => {
+                if tr.insert((sym,src), dest).is_some() {
+                    tr = Err(DFAError::DuplicatedTransition(0));
+                }
+            },
+            Err(e) => self.transitions = Err(e),
+        }
+        self
+    }
+
+    pub fn finalize(self) -> Result<DFA, DFAError> {
+        Ok(DFA{transitions: self.transitions.unwrap(), start: self.start, finals: self.finals})
+    }
+}
+*/
+
+
 impl DFA {
     pub fn new() -> DFA {
         DFA{transitions: HashMap::new(), start: 0, finals: HashSet::new()}
