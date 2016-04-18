@@ -81,44 +81,54 @@ pub struct DFA {
 
 #[derive(Debug)]
 pub struct DFABuilder {
-    transitions : Result<HashMap<(char,usize),usize>, DFAError>,
+    transitions : HashMap<(char,usize),usize>,
     start       : usize,
     finals      : HashSet<usize>,
 }
 
-/*
+pub trait DFABuilding {
+    fn add_start(mut self, state: usize) -> Self;
+    fn add_final(mut self, state: usize) -> Self;
+    fn add_transition(mut self, symb: char, src: usize, dest: usize) -> Self;
+    fn finalize(self) -> Result<DFA, DFAError>;
+}
+
 impl DFABuilder {
-    pub fn new() -> DFABuilder {
-        DFABuilder{transitions: Ok(HashMap::new()), start: 0, finals: HashSet::new()}
-    }
-
-    pub fn starting(mut self, start: usize) -> DFABuilder {
-        self.start = start;
-        self
-    }
-
-    pub fn add_finals(mut self, finals: usize) -> DFABuilder {
-        self.finals.insert(finals);
-        self
-    }
-
-    pub fn add_transition(mut self, sym: char, src: usize, dest: usize) -> DFABuilder {
-        match self.transitions {
-            Ok(ref mut tr) => {
-                if tr.insert((sym,src), dest).is_some() {
-                    tr = Err(DFAError::DuplicatedTransition(0));
-                }
-            },
-            Err(e) => self.transitions = Err(e),
-        }
-        self
-    }
-
-    pub fn finalize(self) -> Result<DFA, DFAError> {
-        Ok(DFA{transitions: self.transitions.unwrap(), start: self.start, finals: self.finals})
+    pub fn new() -> Result<DFABuilder,DFAError> {
+        Ok(DFABuilder{transitions: HashMap::new(), start: 0, finals: HashSet::new()})
     }
 }
-*/
+
+impl DFABuilding for Result<DFABuilder,DFAError> {
+    fn add_start(self, state: usize) -> Result<DFABuilder,DFAError> {
+        self.and_then(|mut dfa| {
+            dfa.start = state;
+            Ok(dfa)
+        })
+    }
+
+    fn add_final(self, state: usize) -> Result<DFABuilder,DFAError> {
+        self.and_then(|mut dfa| {
+            dfa.finals.insert(state);
+            Ok(dfa)
+        })
+    }
+
+    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<DFABuilder,DFAError> {
+        self.and_then(|mut dfa| {
+            if dfa.transitions.insert((symb,src), dest).is_some() {
+                return Err(DFAError::DuplicatedTransition(0));
+            }
+            Ok(dfa)
+        })
+    }
+
+    fn finalize(self) -> Result<DFA, DFAError> {
+        self.and_then(|dfa| {
+            Ok(DFA{transitions: dfa.transitions, start: dfa.start, finals: dfa.finals})
+        })
+    }
+}
 
 
 impl DFA {
