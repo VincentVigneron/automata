@@ -280,15 +280,16 @@ mod tests {
 
     #[test]
     fn test_dfa() {
-        let model =
-            "0\n\
-             3\n\
-             a 0 1\n\
-             c 0 3\n\
-             b 1 2\n\
-             a 2 1\n\
-             c 2 3";
-        let dfa = DFAReader::new_from_string(&model).unwrap();
+        let dfa = DFABuilder::new()
+            .add_start(0)
+            .add_final(3)
+            .add_transition('a', 0, 1)
+            .add_transition('c', 0, 3)
+            .add_transition('b', 1, 2)
+            .add_transition('a', 2, 1)
+            .add_transition('c', 2, 3)
+            .finalize()
+            .unwrap();
         let samples =
             vec![("ababac", false),
                  ("ababc", true),
@@ -313,6 +314,7 @@ mod tests {
             .add_transition('b', 1, 2)
             .add_transition('a', 2, 1)
             .add_transition('c', 2, 3)
+            .finalize()
             .unwrap();
     }
 
@@ -326,7 +328,8 @@ mod tests {
             .add_transition('b', 1, 2)
             .add_transition('a', 2, 1)
             .add_transition('c', 2, 3)
-            .add_transition('a', 0, 2);
+            .add_transition('a', 0, 2)
+            .finalize();
         match dfa {
             Err(DFAError::DuplicatedTransition(sy,sr)) => assert!((sy,sr) == ('a',0)),
             _ => assert!(false, "DuplicatedTransition expected."),
