@@ -12,9 +12,12 @@ use std::fs::File;                     // File, open
 
 // TODO "readme.mk"
 // TODO documentation
+/// The `DFAError` type.
 #[derive(Debug)]
 pub enum DFAError {
+    /// The transition from state `usize` with symbol `char` is defined twice.
     DuplicatedTransition(char,usize),
+    /// No final state is specified.
     MissingFinalStates,
 }
 
@@ -110,6 +113,44 @@ pub struct DFA {
     finals      : HashSet<usize>,
 }
 
+/// The `DFABuilder` follows the builder pattern and allows to create a Deterministic
+/// Finite Automaton. The builder is moved at each call so it is necessary to bind
+/// to a new varaible the return value for each function of the builder.
+///
+/// # Examples
+///
+/// ```
+/// extern crate automata;
+///
+/// use automata::automata::dfa::*;
+/// 
+/// fn main() {
+///     // (toto)*
+///     let dfa = DFABuilder::new()
+///         .add_start(0)
+///         .add_final(4)
+///         .add_final(0)
+///         .add_transition('t', 0, 1)
+///         .add_transition('o', 1, 2)
+///         .add_transition('t', 2, 3)
+///         .add_transition('o', 3, 4)
+///         .add_transition('t', 4, 1)
+///         .finalize();
+///     match dfa {
+///         Ok(dfa) => {
+///             println!("{}", dfa);
+///             println!("{:?}", dfa.run("toto"));
+///             println!("{:?}", dfa.run(""));
+///             println!("{:?}", dfa.run("t"));
+///             println!("{:?}", dfa.run("to"));
+///             println!("{:?}", dfa.run("tot"));
+///             println!("{:?}", dfa.run("totot"));
+///             println!("{:?}", dfa.run("totototo"));
+///         },
+///         Err(e) => e.description(),
+///     }
+/// }
+/// ```
 #[derive(Debug)]
 pub struct DFABuilder {
     transitions : HashMap<(char,usize),usize>,

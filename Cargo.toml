@@ -3,5 +3,9 @@ name = "automata"
 version = "0.1.0"
 authors = ["vigneron <vincent.vigneron@univ-angers.fr>"]
 
+[[bin]]
+doc = false
+name = "dfa"
+
 [dependencies]
 itertools = "0.4"
