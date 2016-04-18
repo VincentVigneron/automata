@@ -14,25 +14,27 @@ use std::fs::File;                     // File, open
 // TODO documentation
 #[derive(Debug)]
 pub enum DFAError {
+    DuplicatedTransition(char,usize),
+    MissingFinalStates,
+}
+
+#[derive(Debug)]
+pub enum DFAReaderError {
     MissingStartingState,
     MissingFinalStates,
     IncompleteTransition(usize),
     IllformedTransition(usize),
-    DuplicatedTransition(usize),
+    DFA(DFAError,usize),
     Io(io::Error),
-    Parse(num::ParseIntError,Option<usize>),
+    Parse(num::ParseIntError,usize),
 }
+
 
 impl fmt::Display for DFAError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            DFAError::Io(ref err) => write!(f, "IO error: {}", err),
-            DFAError::MissingStartingState => write!(f, "The file is empty or only contains white characters."),
-            DFAError::MissingFinalStates => write!(f, "The file does not specify the list of final states."),
-            DFAError::IncompleteTransition(ref line) => write!(f, "Line {}: missing the src or the dest state.", line),
-            DFAError::IllformedTransition(ref line) => write!(f, "Line {}: too much elements.", line),
-            DFAError::DuplicatedTransition(ref line) => write!(f, "Line {}: duplicated transition.", line),
-            DFAError::Parse(ref err,ref line) => write!(f, "Parse error on line {:?}: {}", line, err),
+            DFAError::DuplicatedTransition(symb,state) => write!(f, "Duplicated transition ('{}',{}).", symb, state),
+            DFAError::MissingFinalStates => write!(f, "Missing final states."),
         }
     }
 }
@@ -40,35 +42,64 @@ impl fmt::Display for DFAError {
 impl error::Error for DFAError {
     fn description(&self) -> &str {
         match *self {
-            DFAError::Io(ref err) => err.description(),
-            DFAError::MissingStartingState => "The file is empty or only contains white characters.",
-            DFAError::MissingFinalStates => "The file does not specify the list of final states.",
-            DFAError::IncompleteTransition(_) => "Missing the src or the dest state.",
-            DFAError::IllformedTransition(_) => "Too much elements.",
-            DFAError::DuplicatedTransition(_) => "Duplicated transition.",
-            DFAError::Parse(ref err,_) => err.description(),
+            DFAError::DuplicatedTransition(_,_) => "Duplicated transition.", 
+            DFAError::MissingFinalStates => "Missing final states.",
+        }
+    }
+
+
+    fn cause(&self) -> Option<&error::Error> {
+        None
+    }
+}
+
+impl fmt::Display for DFAReaderError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            DFAReaderError::Io(ref err) => write!(f, "IO error: {}", err),
+            DFAReaderError::MissingStartingState => write!(f, "The file is empty or only contains white characters."),
+            DFAReaderError::MissingFinalStates => write!(f, "The file does not specify the list of final states."),
+            DFAReaderError::IncompleteTransition(ref line) => write!(f, "Line {}: missing the src or the dest state.", line),
+            DFAReaderError::IllformedTransition(ref line) => write!(f, "Line {}: too much elements.", line),
+            DFAReaderError::DFA(ref err,ref line) => write!(f, "Line {}: DFAError {}", line, err),
+            DFAReaderError::Parse(ref err,ref line) => write!(f, "Line {}: parse error {}", line, err),
+        }
+    }
+}
+
+impl error::Error for DFAReaderError {
+    fn description(&self) -> &str {
+        match *self {
+            DFAReaderError::Io(ref err) => err.description(),
+            DFAReaderError::MissingStartingState => "The file is empty or only contains white characters.",
+            DFAReaderError::MissingFinalStates => "The file does not specify the list of final states.",
+            DFAReaderError::IncompleteTransition(_) => "Missing the src or the dest state.",
+            DFAReaderError::IllformedTransition(_) => "Too much elements.",
+            DFAReaderError::DFA(ref err,_) => err.description(),
+            DFAReaderError::Parse(ref err,_) => err.description(),
         }
     }
 
 
     fn cause(&self) -> Option<&error::Error> {
         match *self {
-            DFAError::Io(ref err) => Some(err),
-            DFAError::Parse(ref err,_) => Some(err),
+            DFAReaderError::Io(ref err) => Some(err),
+            DFAReaderError::Parse(ref err,_) => Some(err),
+            DFAReaderError::DFA(ref err,_) => Some(err),
             _ => None,
         }
     }
 }
 
-impl From<io::Error> for DFAError {
-    fn from(err: io::Error) -> DFAError {
-        DFAError::Io(err)
+impl From<io::Error> for DFAReaderError {
+    fn from(err: io::Error) -> DFAReaderError {
+        DFAReaderError::Io(err)
     }
 }
 
-impl From<num::ParseIntError> for DFAError {
-    fn from(err: num::ParseIntError) -> DFAError {
-        DFAError::Parse(err,None)
+impl From<num::ParseIntError> for DFAReaderError {
+    fn from(err: num::ParseIntError) -> DFAReaderError {
+        DFAReaderError::Parse(err,0)
     }
 }
 
@@ -117,7 +148,7 @@ impl DFABuilding for Result<DFABuilder,DFAError> {
     fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<DFABuilder,DFAError> {
         self.and_then(|mut dfa| {
             if dfa.transitions.insert((symb,src), dest).is_some() {
-                return Err(DFAError::DuplicatedTransition(0));
+                return Err(DFAError::DuplicatedTransition(symb,src));
             }
             Ok(dfa)
         })
@@ -129,23 +160,23 @@ impl DFABuilding for Result<DFABuilder,DFAError> {
         })
     }
 }
+
 pub struct DFAReader;
 
 impl DFAReader {
-    fn parse_dfa_error(contents: &str, line: usize) -> Result<usize, DFAError> {
+    fn parse_dfa_error(contents: &str, line: usize) -> Result<usize, DFAReaderError> {
             contents.parse::<usize>()
-                    .map_err(|e| DFAError::Parse(e,Some(line)))
+                    .map_err(|e| DFAReaderError::Parse(e,line))
     }
 
-    pub fn new_from_file<P: AsRef<Path>>(file_path: P) -> Result<DFA, DFAError> {
+    pub fn new_from_file<P: AsRef<Path>>(file_path: P) -> Result<DFA, DFAReaderError> {
         let file = try!(File::open(file_path));
         let file = BufReader::new(file);
         DFAReader::new_from_lines(&mut file.lines())
     }
 
-    fn new_from_lines(lines : &mut Iterator<Item=io::Result<String>>) -> Result<DFA, DFAError> {
-        let mut dfa = DFABuilder::new().finalize().unwrap();
-        //let mut dfa = DFABuilder::new();
+    fn new_from_lines(lines : &mut Iterator<Item=io::Result<String>>) -> Result<DFA, DFAReaderError> {
+        let mut dfa = DFABuilder::new();
         let mut lines = lines
             .map(|line| {
                 line.and_then(|contents| Ok(contents.split('#').nth(0).unwrap().trim().to_owned()))
@@ -157,26 +188,24 @@ impl DFAReader {
                 line.is_err() || !line.unwrap().is_empty()
             });
         // Starting state
-        let (nline,line) = try!(lines.next().ok_or(DFAError::MissingStartingState));
+        let (nline,line) = try!(lines.next().ok_or(DFAReaderError::MissingStartingState));
         let line = try!(line);
-        dfa.start = try!(DFAReader::parse_dfa_error(&line,nline));
-        //let start = try!(DFAReader::parse_dfa_error(&line,nline));
-        //try!(dfa.add_start(start).map_err(|e| );
+        let start = try!(DFAReader::parse_dfa_error(&line,nline));
+        dfa = dfa.add_start(start);
+        if let Err(e) = dfa {
+            return Err(DFAReaderError::DFA(e,nline));
+        }
         // Final states
-        let (nline,line) = try!(lines.next().ok_or(DFAError::MissingFinalStates));
+        let (nline,line) = try!(lines.next().ok_or(DFAReaderError::MissingFinalStates));
         let line = try!(line);
-        dfa.finals = try!(line
+        dfa = try!(line
             .split_whitespace()
             .map(|token| DFAReader::parse_dfa_error(token,nline))
-            .fold_results(HashSet::new(), |mut acc, elt| {
-                acc.insert(elt);
-                acc
-            }));
-        //try!(line
-            //.split_whitespace()
-            //.map(|token| DFAReader::parse_dfa_error(token,nline))
-            //.fold_results(dfa, |mut acc, elt| acc.add_final(elt)));
-        //try!(dfa.map_err(|e| ));
+            .fold_results(dfa, |acc, elt| acc.add_final(elt)));
+        if let Err(e) = dfa {
+            return Err(DFAReaderError::DFA(e,nline));
+        }
+        // Transitions
         for (nline,line) in lines {
             let line = try!(line);
             let mut tokens = line.split_whitespace();
@@ -184,28 +213,28 @@ impl DFAReader {
             let mut symbs = tokens.next().unwrap().chars();
             let symb = symbs.nth(0).unwrap();
             if symbs.next().is_some() {
-                return Err(DFAError::IllformedTransition(nline));
+                return Err(DFAReaderError::IllformedTransition(nline));
             }
             let src = try!(tokens
                 .next()
-                .ok_or(DFAError::IncompleteTransition(nline))
+                .ok_or(DFAReaderError::IncompleteTransition(nline))
                 .and_then(|contents| DFAReader::parse_dfa_error(contents,nline)));
             let dest = try!(tokens
                 .next()
-                .ok_or(DFAError::IncompleteTransition(nline))
+                .ok_or(DFAReaderError::IncompleteTransition(nline))
                 .and_then(|contents| DFAReader::parse_dfa_error(contents,nline)));
             if tokens.next().is_some() {
-                return Err(DFAError::IllformedTransition(nline));
+                return Err(DFAReaderError::IllformedTransition(nline));
             }
-            if dfa.transitions.insert((symb,src), dest).is_some() {
-                return Err(DFAError::DuplicatedTransition(nline));
+            dfa = dfa.add_transition(symb,src,dest);
+            if let Err(e) = dfa {
+                return Err(DFAReaderError::DFA(e,nline));
             }
-            //try!(dfa.add_transition(symb,src,dest).map_err(|e| ));
         }
-        Ok(dfa)
+        dfa.finalize().map_err(|e| DFAReaderError::DFA(e,nline))
     }
 
-    pub fn new_from_string(file: &str) -> Result<DFA, DFAError> {
+    pub fn new_from_string(file: &str) -> Result<DFA, DFAReaderError> {
         DFAReader::new_from_lines(&mut file.lines().map(|line| Ok(line.to_string())))
     }
 }
@@ -275,11 +304,41 @@ mod tests {
     }
 
     #[test]
+    fn test_dfa_builder() {
+        let _dfa = DFABuilder::new()
+            .add_start(0)
+            .add_final(3)
+            .add_transition('a', 0, 1)
+            .add_transition('c', 0, 3)
+            .add_transition('b', 1, 2)
+            .add_transition('a', 2, 1)
+            .add_transition('c', 2, 3)
+            .unwrap();
+    }
+
+    #[test]
+    fn test_dfa_builder_duplicated_transition() {
+        let dfa = DFABuilder::new()
+            .add_start(0)
+            .add_final(3)
+            .add_transition('a', 0, 1)
+            .add_transition('c', 0, 3)
+            .add_transition('b', 1, 2)
+            .add_transition('a', 2, 1)
+            .add_transition('c', 2, 3)
+            .add_transition('a', 0, 2);
+        match dfa {
+            Err(DFAError::DuplicatedTransition(sy,sr)) => assert!((sy,sr) == ('a',0)),
+            _ => assert!(false, "DuplicatedTransition expected."),
+        }
+    }
+
+    #[test]
     fn test_empty_file() {
         let model =
             "";
         match DFAReader::new_from_string(model) {
-            Err(DFAError::MissingStartingState) => assert!(true),
+            Err(DFAReaderError::MissingStartingState) => assert!(true),
             _ => assert!(false, "Missing state expected."),
         }
     }
@@ -289,7 +348,7 @@ mod tests {
         let model =
             "a";
         match DFAReader::new_from_string(model) {
-            Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 1),
+            Err(DFAReaderError::Parse(_,line)) => assert!(line == 1),
             _ => assert!(false, "Parsing error."),
         }
     }
@@ -305,7 +364,7 @@ mod tests {
              a 2 1\n\
              c 2 3";
         match DFAReader::new_from_string(model) {
-            Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 1),
+            Err(DFAReaderError::Parse(_,line)) => assert!(line == 1),
             _ => assert!(false, "Parsing error."),
         }
     }
@@ -316,7 +375,7 @@ mod tests {
             "1\n\
             ";
         match DFAReader::new_from_string(model) {
-            Err(DFAError::MissingFinalStates) => assert!(true),
+            Err(DFAReaderError::MissingFinalStates) => assert!(true),
             _ => assert!(false, "Missing final states expected."),
         }
     }
@@ -327,7 +386,7 @@ mod tests {
             "1\n\
              2 a 3";
         match DFAReader::new_from_string(model) {
-            Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 2),
+            Err(DFAReaderError::Parse(_,line)) => assert!(line == 2),
             _ => assert!(false, "Parsing error."),
         }
     }
@@ -347,19 +406,21 @@ mod tests {
              3\n\
              a 0 1 8";
         match DFAReader::new_from_string(model) {
-            Err(DFAError::IllformedTransition(line)) => assert!(line == 3),
+            Err(DFAReaderError::IllformedTransition(line)) => assert!(line == 3),
             _ => assert!(false, "IllformedTransition expected."),
         }
     }
 
     #[test]
-    #[should_panic]
     fn test_transitions_start_with_at_least_two_chars() {
         let model =
             "0\n\
              3\n\
              ab 2 3";
-        let _dfa = DFAReader::new_from_string(&model).unwrap();
+        match DFAReader::new_from_string(model) {
+            Err(DFAReaderError::IllformedTransition(line)) => assert!(line == 3),
+            _ => assert!(false, "IllformedTransition expected."),
+        }
     }
 
     #[test]
@@ -369,7 +430,7 @@ mod tests {
              3\n\
              c b 3";
         match DFAReader::new_from_string(model) {
-            Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 3),
+            Err(DFAReaderError::Parse(_,line)) => assert!(line == 3),
             _ => assert!(false, "Parsing error."),
         }
     }
@@ -381,7 +442,7 @@ mod tests {
              3\n\
              c 2 b";
         match DFAReader::new_from_string(model) {
-            Err(DFAError::Parse(_,line)) => assert!(line.unwrap() == 3),
+            Err(DFAReaderError::Parse(_,line)) => assert!(line == 3),
             _ => assert!(false, "Parsing error."),
         }
     }
@@ -394,7 +455,7 @@ mod tests {
              c 2 3\n\
              c 2 4";
         match DFAReader::new_from_string(model) {
-            Err(DFAError::DuplicatedTransition(line)) => assert!(line == 4),
+            Err(DFAReaderError::DFA(_,line)) => assert!(line == 4),
             _ => assert!(false, "DuplicatedTransition expected."),
         }
     }
@@ -403,7 +464,7 @@ mod tests {
     fn test_read_from_fake_file() {
         let file = "fake.txt";
         match DFAReader::new_from_file(file) {
-            Err(DFAError::Io(_)) => assert!(true),
+            Err(DFAReaderError::Io(_)) => assert!(true),
             _ => assert!(false, "Io::Error expected."),
         }
     }
