@@ -18,13 +18,13 @@ fn main() {
     match dfa {
         Ok(dfa) => {
             println!("{}", dfa);
-            println!("{:?}", dfa.run("toto"));
-            println!("{:?}", dfa.run(""));
-            println!("{:?}", dfa.run("t"));
-            println!("{:?}", dfa.run("to"));
-            println!("{:?}", dfa.run("tot"));
-            println!("{:?}", dfa.run("totot"));
-            println!("{:?}", dfa.run("totototo"));
+            println!("{:?}", dfa.test("toto"));
+            println!("{:?}", dfa.test(""));
+            println!("{:?}", dfa.test("t"));
+            println!("{:?}", dfa.test("to"));
+            println!("{:?}", dfa.test("tot"));
+            println!("{:?}", dfa.test("totot"));
+            println!("{:?}", dfa.test("totototo"));
         },
         _ => process::exit(1),
     }
