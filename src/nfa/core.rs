@@ -307,23 +307,17 @@ impl NFA {
         let f = input
             .chars()
             .fold(Some(start), |states,c| {
-                match states {
-                    Some(n) => {
-                        n.iter().fold(Some(HashSet::new()), |acc, state| {
-                            match acc {
-                                Some(acc) => {
-                                    if let Some(trans) = self.transitions.get(&(c,*state)) {
-                                        Some(acc.union(trans).cloned().collect())
-                                    } else {
-                                        None
-                                    }
-                                },
-                                None => None,
+                states.and_then(|n| {
+                    n.iter().fold(Some(HashSet::new()), |acc, state| {
+                        acc.and_then(|acc| {
+                            if let Some(trans) = self.transitions.get(&(c,*state)) {
+                                Some(acc.union(trans).cloned().collect())
+                            } else {
+                                None
                             }
                         })
-                    },
-                    None => None,
-                }
+                    })
+                })
             });
         match f {
             Some(states) => states.intersection(&self.finals).next().is_some(),
