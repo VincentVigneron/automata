@@ -13,8 +13,6 @@ use std::fmt;                          // Formatter, format!, Display, Debug, wr
 use std::error;
 use std::result;
 
-// TODO "readme.mk"
-// TODO documentation
 /// The `DFAError` type.
 #[derive(Debug)]
 pub enum DFAError {
@@ -68,6 +66,7 @@ pub struct DFA {
 /// # Errors
 ///
 /// Return an error if the starting state is not specified.
+///
 /// Return an error if the final states are not specified.
 ///
 /// # Examples
@@ -118,6 +117,25 @@ pub struct DFA {
 /// 
 /// fn main() {
 ///     let dfa = DFABuilder::new()
+///         .add_start(4)
+///         .add_transition('t', 0, 1)
+///         .add_transition('t', 0, 2)
+///         .finalize();
+///     match dfa {
+///         Err(DFAError::DuplicatedTransition(symb,src)) => assert!((symb,src)==('t',0)),
+///         _ => assert!(false),
+///     }
+/// }
+/// ```
+///
+/// ```
+/// extern crate automata;
+///
+/// use automata::automata::dfa::*;
+/// use std::error::Error;
+/// 
+/// fn main() {
+///     let dfa = DFABuilder::new()
 ///         .add_final(4)
 ///         .add_transition('t', 0, 1)
 ///         .finalize();
@@ -135,16 +153,51 @@ pub struct DFABuilder {
     finals      : HashSet<usize>,
 }
 
+/// Alias for result::Result<T,DFAError>.
 pub type Result<T> = result::Result<T,DFAError>;
 
+/// DFABuilding is the trait assiociated to the DFABuilder type. Each DFABuilder
+/// should implement DFABuilding trait.
+///
+/// DFABuilder can generate some errors during the building stage. For instance,
+/// one could try to insert a transition with two different destination states.
+///
+/// #Errors
+///
+/// If self contains a DFAerror then each function should transfer this error.
 pub trait DFABuilding {
+    /// Add a starting state to the DFA.
+    ///
+    /// # Errors
+    /// 
+    /// In the futur will return a DFAError::DuplicatedStartingState if
+    /// two starting states are added.
     fn add_start(mut self, state: usize) -> Result<DFABuilder>;
+
+    /// Add a final state to the DFA.
     fn add_final(mut self, state: usize) -> Result<DFABuilder>;
+
+    /// Add a transition to the DFA.
+    ///
+    /// # Errors
+    ///
+    /// Return a DFAError::DuplicatedTransition(symb,src) if a transtion
+    /// with the same symb and src has already been inserted, even if
+    /// the destination state is the same.
     fn add_transition(mut self, symb: char, src: usize, dest: usize) -> Result<DFABuilder>;
+
+    /// Finalize the building of the DFA.
+    ///
+    /// # Errors
+    ///
+    /// Return a DFAError::MissingStartingState if no starting state is specified.
+    ///
+    /// Return a DFAError::MissingFinalStates if no final state is specified.
     fn finalize(self) -> Result<DFA>;
 }
 
 impl DFABuilder {
+    /// Creates a new DFABuilder.
     pub fn new() -> Result<DFABuilder> {
         Ok(DFABuilder{transitions: HashMap::new(), start: None, finals: HashSet::new()})
     }
@@ -169,6 +222,9 @@ impl DFABuilding for DFABuilder {
 }
 
 
+/// Implementing DFABuilding trait for Result<DFABuilder> allows
+/// to chain the return value of the DFABuilder instead of unwrapping them
+/// at each stage of the building process.
 impl DFABuilding for Result<DFABuilder> {
     fn add_start(self, state: usize) -> Result<DFABuilder> {
         self.and_then(|mut dfa| {
