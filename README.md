@@ -3,4 +3,4 @@ This a small project that defines simple automaton. I started this project to le
 programming language.
 
 # License
-[LICESNSE-MIT](https://github.com/VincentVigneron/automata/blob/master/README.md)
+[LICESNSE-MIT](LICENSE-MIT)
