@@ -9,7 +9,7 @@
 extern crate automata;
 
 use std::process;
-use automata::automata::dfa::*;
+use automata::dfa::core::*;
 
 fn main() {
     // (toto)*

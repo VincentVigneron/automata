@@ -18,7 +18,7 @@ use std::fs::File;                     // File, open
 use std::result;
 use self::itertools::Itertools;        // fold_results
 
-use automata::dfa::{DFA,DFABuilder,DFAError,DFABuilding};
+use dfa::core::{DFA,DFABuilder,DFAError,DFABuilding};
 
 /// Type `DFAReaderError` describes the list of errors that can occur during
 /// the parsing of a DFA file.
@@ -118,7 +118,7 @@ impl DFAReader {
     /// ```
     /// extern crate automata;
     ///
-    /// use automata::automata::reader::*;
+    /// use automata::dfa::reader::*;
     /// use std::error::Error;
     /// 
     /// fn main() {
@@ -215,7 +215,7 @@ impl DFAReader {
     /// ```
     /// extern crate automata;
     ///
-    /// use automata::automata::reader::*;
+    /// use automata::dfa::reader::*;
     /// use std::error::Error;
     /// 
     /// fn main() {

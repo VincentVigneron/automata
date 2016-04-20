@@ -74,7 +74,7 @@ pub struct DFA {
 /// ```
 /// extern crate automata;
 ///
-/// use automata::automata::dfa::*;
+/// use automata::dfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -94,7 +94,7 @@ pub struct DFA {
 /// ```
 /// extern crate automata;
 ///
-/// use automata::automata::dfa::*;
+/// use automata::dfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -112,7 +112,7 @@ pub struct DFA {
 /// ```
 /// extern crate automata;
 ///
-/// use automata::automata::dfa::*;
+/// use automata::dfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -131,7 +131,7 @@ pub struct DFA {
 /// ```
 /// extern crate automata;
 ///
-/// use automata::automata::dfa::*;
+/// use automata::dfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -263,8 +263,6 @@ impl DFABuilding for Result<DFABuilder> {
 }
 
 impl DFA {
-    // TODO return the position of the first match
-    //      maybe create an another function to do that
     /// Test if an input string is a word of the language defined by the DFA.
     ///
     /// # Examples
@@ -272,7 +270,7 @@ impl DFA {
     /// ```
     /// extern crate automata;
     ///
-    /// use automata::automata::dfa::*;
+    /// use automata::dfa::core::*;
     /// use std::error::Error;
     /// 
     /// fn main() {
