@@ -20,14 +20,27 @@ use self::itertools::Itertools;        // fold_results
 
 use automata::dfa::{DFA,DFABuilder,DFAError,DFABuilding};
 
+/// Type `DFAReaderError` describes the list of errors that can occur during
+/// the parsing of a DFA file.
 #[derive(Debug)]
 pub enum DFAReaderError {
+    /// Error `MissingStartingState` means the file does not contains the starting state.
     MissingStartingState,
+    /// Error `MissingFinalStates` means the file does not contains the list of final states.
     MissingFinalStates,
+    /// Error `IncompleteTransition` means the transition on the specified line does not contain
+    /// one of these elements: symbol, source state, destination state.
     IncompleteTransition(usize),
+    /// Error `IllformedTransition` means the transition contains to much elements or that
+    /// the symbole is composed with modre than two characters.
     IllformedTransition(usize),
+    /// Error `DFA` encapsules the error specific to the DFA building process (no final
+    /// states,...).
     DFA(DFAError,usize),
+    /// Error `Io` is relative to the input errors (the file does not exist, the file can not be
+    /// read,...à.
     Io(io::Error),
+    /// Error `Parse` is relative to the parsing errors (a state is an intger).
     Parse(num::ParseIntError,usize),
 }
 
@@ -81,8 +94,11 @@ impl From<num::ParseIntError> for DFAReaderError {
     }
 }
 
+/// Alias for result::Result<T,DFAReaderError>.
 pub type Result<T> = result::Result<T,DFAReaderError>;
 
+/// Struct `DFAReader` is an empty structure that builds a `DFA` from a file
+/// or from a `&str`.
 pub struct DFAReader;
 
 impl DFAReader {
@@ -91,6 +107,30 @@ impl DFAReader {
                     .map_err(|e| DFAReaderError::Parse(e,line))
     }
 
+    /// Reads a DFA from a file.
+    ///
+    /// # Description
+    ///
+    /// * `file_path` - The path to the file that contains the DFA.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// extern crate automata;
+    ///
+    /// use automata::automata::reader::*;
+    /// use std::error::Error;
+    /// 
+    /// fn main() {
+    ///     let dfa = DFAReader::new_from_file("dfa.txt");
+    ///     match dfa {
+    ///         Ok(dfa) => {
+    ///            // Do stuff with the dfa
+    ///         },
+    ///         Err(e) => println!("{}", e),
+    ///     }
+    /// }
+    /// ```
     pub fn new_from_file<P: AsRef<Path>>(file_path: P) -> Result<DFA> {
         let file = try!(File::open(file_path));
         let file = BufReader::new(file);
