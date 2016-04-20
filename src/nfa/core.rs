@@ -304,25 +304,22 @@ impl NFA {
     /// ```
     pub fn test(&self, input: &str) -> bool {
         let start : HashSet<_> = [self.start].iter().cloned().collect();
-        let f = input
+        input
             .chars()
             .fold(Some(start), |states,c| {
-                states.and_then(|n| {
-                    n.iter().fold(Some(HashSet::new()), |acc, state| {
+                states.and_then(|states| {
+                    states.iter().fold(Some(HashSet::new()), |acc, state| {
                         acc.and_then(|acc| {
-                            if let Some(trans) = self.transitions.get(&(c,*state)) {
-                                Some(acc.union(trans).cloned().collect())
-                            } else {
-                                None
-                            }
+                            self.transitions
+                                .get(&(c,*state))
+                                .and_then(|trans| Some(acc.union(trans).cloned().collect()))
                         })
                     })
                 })
-            });
-        match f {
-            Some(states) => states.intersection(&self.finals).next().is_some(),
-            None => false,
-        }
+            })
+            .unwrap_or(HashSet::new())
+            .intersection(&self.finals)
+            .next().is_some()
     }
 }
 
