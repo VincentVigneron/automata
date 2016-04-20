@@ -309,9 +309,18 @@ impl NFA {
             .fold(Some(start), |states,c| {
                 match states {
                     Some(n) => {
-                        Some(n.iter().fold(HashSet::new(), |acc, state| {
-                            acc.union(self.transitions.get(&(c,*state)).unwrap()).cloned().collect()
-                        }))
+                        n.iter().fold(Some(HashSet::new()), |acc, state| {
+                            match acc {
+                                Some(acc) => {
+                                    if let Some(trans) = self.transitions.get(&(c,*state)) {
+                                        Some(acc.union(trans).cloned().collect())
+                                    } else {
+                                        None
+                                    }
+                                },
+                                None => None,
+                            }
+                        })
                     },
                     None => None,
                 }
