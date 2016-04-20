@@ -204,8 +204,40 @@ impl DFAReader {
         dfa.finalize().map_err(|e| DFAReaderError::DFA(e,0))
     }
 
-    pub fn new_from_string(file: &str) -> Result<DFA> {
-        DFAReader::new_from_lines(&mut file.lines().map(|line| Ok(line.to_string())))
+    /// Reads a DFA from a `&str`.
+    ///
+    /// # Description
+    ///
+    /// * `dfa` - The string representation of the DFA.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// extern crate automata;
+    ///
+    /// use automata::automata::reader::*;
+    /// use std::error::Error;
+    /// 
+    /// fn main() {
+    ///     // (abc)*
+    ///     let dfa =
+    ///         "0 1\n\
+    ///          0 3\n\
+    ///          a 0 1\n\
+    ///          b 1 2\n\
+    ///          c 2 3\n\
+    ///          a 3 0";
+    ///     let dfa = DFAReader::new_from_string(dfa);
+    ///     match dfa {
+    ///         Ok(dfa) => {
+    ///            // Do stuff with the dfa
+    ///         },
+    ///         Err(e) => println!("{}", e),
+    ///     }
+    /// }
+    /// ```
+    pub fn new_from_string(dfa: &str) -> Result<DFA> {
+        DFAReader::new_from_lines(&mut dfa.lines().map(|line| Ok(line.to_string())))
     }
 }
 
