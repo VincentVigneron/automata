@@ -221,12 +221,11 @@ impl DFAReader {
     /// fn main() {
     ///     // (abc)*
     ///     let dfa =
-    ///         "0 1\n\
-    ///          0 3\n\
+    ///         "0\n\
+    ///          0\n\
     ///          a 0 1\n\
     ///          b 1 2\n\
-    ///          c 2 3\n\
-    ///          a 3 0";
+    ///          c 2 0";
     ///     let dfa = DFAReader::new_from_string(dfa);
     ///     match dfa {
     ///         Ok(dfa) => {

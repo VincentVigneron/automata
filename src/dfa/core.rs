@@ -81,12 +81,10 @@ pub struct DFA {
 ///     // (abc)*
 ///     let dfa = DFABuilder::new()
 ///         .add_start(0)
-///         .add_final(3)
 ///         .add_final(0)
 ///         .add_transition('a', 0, 1)
 ///         .add_transition('b', 1, 2)
-///         .add_transition('c', 2, 3)
-///         .add_transition('a', 3, 1)
+///         .add_transition('c', 2, 0)
 ///         .finalize();
 /// }
 /// ```
@@ -277,12 +275,10 @@ impl DFA {
     ///     // (abc)*
     ///     let dfa = DFABuilder::new()
     ///         .add_start(0)
-    ///         .add_final(3)
     ///         .add_final(0)
     ///         .add_transition('a', 0, 1)
     ///         .add_transition('b', 1, 2)
-    ///         .add_transition('c', 2, 3)
-    ///         .add_transition('a', 3, 1)
+    ///         .add_transition('c', 2, 0)
     ///         .finalize();
     ///     match dfa {
     ///         Ok(dfa) => {
