@@ -19,8 +19,7 @@ fn main() {
         .add_transition('t', 0, 1)
         .add_transition('o', 1, 2)
         .add_transition('t', 2, 3)
-        .add_transition('o', 3, 4)
-        .add_transition('t', 4, 0)
+        .add_transition('o', 3, 0)
         .finalize();
     match dfa {
         Ok(dfa) => {
