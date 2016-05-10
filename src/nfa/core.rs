@@ -227,21 +227,21 @@ impl NFABuilding for NFABuilder {
 /// at each stage of the building process.
 impl NFABuilding for Result<NFABuilder> {
     fn add_start(self, state: usize) -> Result<NFABuilder> {
-        self.and_then(|mut nfa| {
+        self.map(|mut nfa| {
             nfa.start = Some(state);
-            Ok(nfa)
+            nfa
         })
     }
 
     fn add_final(self, state: usize) -> Result<NFABuilder> {
-        self.and_then(|mut nfa| {
+        self.map(|mut nfa| {
             nfa.finals.insert(state);
-            Ok(nfa)
+            nfa
         })
     }
 
     fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<NFABuilder> {
-        self.and_then(|mut nfa| {
+        self.map(|mut nfa| {
             {
                 // A block is mandatory here because states borrow a value inside nfa.
                 // Ok(nfa) moves nfa but if states is in the same block it will has the
@@ -249,7 +249,7 @@ impl NFABuilding for Result<NFABuilder> {
                 let states = nfa.transitions.entry((symb,src)).or_insert(HashSet::new());
                 (*states).insert(dest);
             }
-            Ok(nfa)
+            nfa
         })
     }
 
@@ -312,7 +312,7 @@ impl NFA {
                         acc.and_then(|acc| {
                             self.transitions
                                 .get(&(c,*state))
-                                .and_then(|trans| Some(acc.union(trans).cloned().collect()))
+                                .map(|trans| acc.union(trans).cloned().collect())
                         })
                     })
                 })
@@ -381,24 +381,6 @@ mod tests {
             .add_transition('c', 2, 3)
             .finalize()
             .unwrap();
-    }
-
-    #[test]
-    fn test_nfa_builder_duplicated_transition() {
-        let nfa = NFABuilder::new()
-            .add_start(0)
-            .add_final(3)
-            .add_transition('a', 0, 1)
-            .add_transition('c', 0, 3)
-            .add_transition('b', 1, 2)
-            .add_transition('a', 2, 1)
-            .add_transition('c', 2, 3)
-            .add_transition('a', 0, 2)
-            .finalize();
-        match nfa {
-            Err(NFAError::DuplicatedTransition(sy,sr)) => assert!((sy,sr) == ('a',0)),
-            _ => assert!(false, "DuplicatedTransition expected."),
-        }
     }
 
     #[test]

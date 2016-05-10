@@ -188,7 +188,7 @@ impl NFAReader {
         let mut nfa = try!(NFABuilder::new().map_err(|e| NFAReaderError::NFA(e,0)));
         let mut lines = lines
             .map(|line| {
-                line.and_then(|contents| Ok(contents.split('#').nth(0).unwrap().trim().to_owned()))
+                line.map(|contents| contents.split('#').nth(0).unwrap().trim().to_owned())
             })
             .enumerate().map(|(nline,line)| (nline+1,line))
             .filter(|&(_,ref line)| {
@@ -356,19 +356,6 @@ mod test {
         match NFAReader::new_from_string(model) {
             Err(NFAReaderError::Parse(_,line)) => assert!(line == 3),
             _ => assert!(false, "Parse expected."),
-        }
-    }
-
-    #[test]
-    fn test_duplicated_transition() {
-        let model =
-            "0\n\
-             3\n\
-             c 2 3\n\
-             c 2 4";
-        match NFAReader::new_from_string(model) {
-            Err(NFAReaderError::NFA(_,line)) => assert!(line == 4),
-            _ => assert!(false, "DuplicatedTransition expected."),
         }
     }
 

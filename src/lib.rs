@@ -8,3 +8,4 @@
 
 pub mod dfa;
 pub mod nfa;
+pub mod e_nfa;

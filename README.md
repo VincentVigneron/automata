@@ -8,6 +8,7 @@ programming language.
 * ADD DFA ERROR IF ONE STATE IS NOT REACHABLE
 * FINISH NFA
 * ADD E\_NFA (NFA with epsilon transition)
+* CHANGE and\_then to map when it's feasible
 
 # License
 [LICESNSE-MIT](LICENSE-MIT)
