@@ -243,9 +243,10 @@ impl NFABuilding for Result<NFABuilder> {
     fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<NFABuilder> {
         self.map(|mut nfa| {
             {
-                // A block is mandatory here because states borrow a value inside nfa.
-                // Ok(nfa) moves nfa but if states is in the same block it will has the
-                // same lifetime and it's not possible to move a borrowed value.
+                // `states` is a mutable reference to a value inside `transitions` (see or_insert).
+                // It 's not possible to return nfa if states is in the same scope, because the
+                // return statement will try to move nfa, including the `transitions` field while
+                // states will still have a mutable refrence of `transitions`.
                 let states = nfa.transitions.entry((symb,src)).or_insert(HashSet::new());
                 (*states).insert(dest);
             }
