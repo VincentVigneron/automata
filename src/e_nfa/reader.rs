@@ -18,12 +18,12 @@ use std::fs::File;                     // File, open
 use std::result;
 use self::itertools::Itertools;        // fold_results
 
-use nfa::core::{NFA,NFABuilder,NFAError,NFABuilding};
+use e_nfa::core::{ENFA,ENFABuilder,ENFAError,ENFABuilding};
 
-/// Type `NFAReaderError` describes the list of errors that can occur during
-/// the parsing of a NFA file.
+/// Type `ENFAReaderError` describes the list of errors that can occur during
+/// the parsing of a ENFA file.
 #[derive(Debug)]
-pub enum NFAReaderError {
+pub enum ENFAReaderError {
     /// Error `MissingStartingState` means the file does not contains the starting state.
     MissingStartingState,
     /// Error `MissingFinalStates` means the file does not contains the list of final states.
@@ -34,9 +34,9 @@ pub enum NFAReaderError {
     /// Error `IllformedTransition` means the transition contains to much elements or that
     /// the symbole is composed with modre than two characters.
     IllformedTransition(usize),
-    /// Error `NFA` encapsules the error specific to the NFA building process (no final
+    /// Error `ENFA` encapsules the error specific to the ENFA building process (no final
     /// states,...).
-    NFA(NFAError,usize),
+    ENFA(ENFAError,usize),
     /// Error `Io` is relative to the input errors (the file does not exist, the file can not be
     /// read,...à.
     Io(io::Error),
@@ -44,74 +44,74 @@ pub enum NFAReaderError {
     Parse(num::ParseIntError,usize),
 }
 
-impl fmt::Display for NFAReaderError {
+impl fmt::Display for ENFAReaderError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            NFAReaderError::Io(ref err) => write!(f, "IO error: {}", err),
-            NFAReaderError::MissingStartingState => write!(f, "The file is empty or only contains white characters."),
-            NFAReaderError::MissingFinalStates => write!(f, "The file does not specify the list of final states."),
-            NFAReaderError::IncompleteTransition(ref line) => write!(f, "Line {}: missing the src or the dest state.", line),
-            NFAReaderError::IllformedTransition(ref line) => write!(f, "Line {}: too much elements.", line),
-            NFAReaderError::NFA(ref err,ref line) => write!(f, "Line {}: NFAError {}", line, err),
-            NFAReaderError::Parse(ref err,ref line) => write!(f, "Line {}: parse error {}", line, err),
+            ENFAReaderError::Io(ref err) => write!(f, "IO error: {}", err),
+            ENFAReaderError::MissingStartingState => write!(f, "The file is empty or only contains white characters."),
+            ENFAReaderError::MissingFinalStates => write!(f, "The file does not specify the list of final states."),
+            ENFAReaderError::IncompleteTransition(ref line) => write!(f, "Line {}: missing the src or the dest state.", line),
+            ENFAReaderError::IllformedTransition(ref line) => write!(f, "Line {}: too much elements.", line),
+            ENFAReaderError::ENFA(ref err,ref line) => write!(f, "Line {}: ENFAError {}", line, err),
+            ENFAReaderError::Parse(ref err,ref line) => write!(f, "Line {}: parse error {}", line, err),
         }
     }
 }
 
-impl error::Error for NFAReaderError {
+impl error::Error for ENFAReaderError {
     fn description(&self) -> &str {
         match *self {
-            NFAReaderError::Io(ref err) => err.description(),
-            NFAReaderError::MissingStartingState => "The file is empty or only contains white characters.",
-            NFAReaderError::MissingFinalStates => "The file does not specify the list of final states.",
-            NFAReaderError::IncompleteTransition(_) => "Missing the src or the dest state.",
-            NFAReaderError::IllformedTransition(_) => "Too much elements.",
-            NFAReaderError::NFA(ref err,_) => err.description(),
-            NFAReaderError::Parse(ref err,_) => err.description(),
+            ENFAReaderError::Io(ref err) => err.description(),
+            ENFAReaderError::MissingStartingState => "The file is empty or only contains white characters.",
+            ENFAReaderError::MissingFinalStates => "The file does not specify the list of final states.",
+            ENFAReaderError::IncompleteTransition(_) => "Missing the src or the dest state.",
+            ENFAReaderError::IllformedTransition(_) => "Too much elements.",
+            ENFAReaderError::ENFA(ref err,_) => err.description(),
+            ENFAReaderError::Parse(ref err,_) => err.description(),
         }
     }
 
 
     fn cause(&self) -> Option<&error::Error> {
         match *self {
-            NFAReaderError::Io(ref err) => Some(err),
-            NFAReaderError::Parse(ref err,_) => Some(err),
-            NFAReaderError::NFA(ref err,_) => Some(err),
+            ENFAReaderError::Io(ref err) => Some(err),
+            ENFAReaderError::Parse(ref err,_) => Some(err),
+            ENFAReaderError::ENFA(ref err,_) => Some(err),
             _ => None,
         }
     }
 }
 
-impl From<io::Error> for NFAReaderError {
-    fn from(err: io::Error) -> NFAReaderError {
-        NFAReaderError::Io(err)
+impl From<io::Error> for ENFAReaderError {
+    fn from(err: io::Error) -> ENFAReaderError {
+        ENFAReaderError::Io(err)
     }
 }
 
-impl From<num::ParseIntError> for NFAReaderError {
-    fn from(err: num::ParseIntError) -> NFAReaderError {
-        NFAReaderError::Parse(err,0)
+impl From<num::ParseIntError> for ENFAReaderError {
+    fn from(err: num::ParseIntError) -> ENFAReaderError {
+        ENFAReaderError::Parse(err,0)
     }
 }
 
-/// Alias for result::Result<T,NFAReaderError>.
-pub type Result<T> = result::Result<T,NFAReaderError>;
+/// Alias for result::Result<T,ENFAReaderError>.
+pub type Result<T> = result::Result<T,ENFAReaderError>;
 
-/// Struct `NFAReader` is an empty structure that builds a `NFA` from a file
+/// Struct `ENFAReader` is an empty structure that builds a `ENFA` from a file
 /// or from a `&str`.
-pub struct NFAReader;
+pub struct ENFAReader;
 
-impl NFAReader {
+impl ENFAReader {
     fn parse_nfa_error(contents: &str, line: usize) -> Result<usize> {
             contents.parse::<usize>()
-                    .map_err(|e| NFAReaderError::Parse(e,line))
+                    .map_err(|e| ENFAReaderError::Parse(e,line))
     }
 
-    /// Reads a NFA from a file.
+    /// Reads a ENFA from a file.
     ///
     /// # Description
     ///
-    /// * `file_path` - The path to the file that contains the NFA.
+    /// * `file_path` - The path to the file that contains the ENFA.
     ///
     /// # Examples
     ///
@@ -122,7 +122,7 @@ impl NFAReader {
     /// use std::error::Error;
     /// 
     /// fn main() {
-    ///     let nfa = NFAReader::new_from_file("nfa.txt");
+    ///     let nfa = ENFAReader::new_from_file("nfa.txt");
     ///     match nfa {
     ///         Ok(nfa) => {
     ///            // Do stuff with the nfa
@@ -131,61 +131,88 @@ impl NFAReader {
     ///     }
     /// }
     /// ```
-    pub fn new_from_file<P: AsRef<Path>>(file_path: P) -> Result<NFA> {
+    pub fn new_from_file<P: AsRef<Path>>(file_path: P) -> Result<ENFA> {
         let file = try!(File::open(file_path));
         let file = BufReader::new(file);
-        NFAReader::new_from_lines(&mut file.lines())
+        ENFAReader::new_from_lines(&mut file.lines())
     }
 
-    fn read_start(nfa: NFABuilder, lines : &mut Iterator<Item=(usize,io::Result<String>)>) -> Result<NFABuilder> {
-        let (nline,line) = try!(lines.next().ok_or(NFAReaderError::MissingStartingState));
+    fn read_start(nfa: ENFABuilder, lines : &mut Iterator<Item=(usize,io::Result<String>)>) -> Result<ENFABuilder> {
+        let (nline,line) = try!(lines.next().ok_or(ENFAReaderError::MissingStartingState));
         let line = try!(line);
-        let start = try!(NFAReader::parse_nfa_error(&line,nline));
+        let start = try!(ENFAReader::parse_nfa_error(&line,nline));
         let nfa = nfa.add_start(start);
         match nfa {
             Ok(nfa) => Ok(nfa),
-            Err(e) => Err(NFAReaderError::NFA(e,nline)),
+            Err(e) => Err(ENFAReaderError::ENFA(e,nline)),
         }
     }
 
-    fn read_finals(nfa: NFABuilder, lines : &mut Iterator<Item=(usize,io::Result<String>)>) -> Result<NFABuilder> {
-        let (nline,line) = try!(lines.next().ok_or(NFAReaderError::MissingFinalStates));
+    fn read_finals(nfa: ENFABuilder, lines : &mut Iterator<Item=(usize,io::Result<String>)>) -> Result<ENFABuilder> {
+        let (nline,line) = try!(lines.next().ok_or(ENFAReaderError::MissingFinalStates));
         let line = try!(line);
         let nfa = try!(try!(line
             .split_whitespace()
-            .map(|token| NFAReader::parse_nfa_error(token,nline))
+            .map(|token| ENFAReader::parse_nfa_error(token,nline))
             .fold_results(Ok(nfa), |acc, elt| acc.add_final(elt)))
-            .map_err(|e| NFAReaderError::NFA(e,nline)));
+            .map_err(|e| ENFAReaderError::ENFA(e,nline)));
         Ok(nfa)
     }
 
-    fn read_transition(nfa: NFABuilder, line : (usize,io::Result<String>))-> Result<NFABuilder> {
-        let (nline,line) = line;
-        let line = try!(line);
+    // TODO swap order line <=> nline
+    fn read_complete_transition(nfa: ENFABuilder, line : String, nline: usize) -> Result<ENFABuilder> {
         let mut tokens = line.split_whitespace();
         // can't fail because lines iterates over the non-empty line
         let mut symbs = tokens.next().unwrap().chars();
         let symb = symbs.nth(0).unwrap();
         if symbs.next().is_some() {
-            return Err(NFAReaderError::IllformedTransition(nline));
+            return Err(ENFAReaderError::IllformedTransition(nline));
         }
         let src = try!(tokens
             .next()
-            .ok_or(NFAReaderError::IncompleteTransition(nline))
-            .and_then(|contents| NFAReader::parse_nfa_error(contents,nline)));
+            .ok_or(ENFAReaderError::IncompleteTransition(nline))
+            .and_then(|contents| ENFAReader::parse_nfa_error(contents,nline)));
         let dest = try!(tokens
             .next()
-            .ok_or(NFAReaderError::IncompleteTransition(nline))
-            .and_then(|contents| NFAReader::parse_nfa_error(contents,nline)));
+            .ok_or(ENFAReaderError::IncompleteTransition(nline))
+            .and_then(|contents| ENFAReader::parse_nfa_error(contents,nline)));
         if tokens.next().is_some() {
-            return Err(NFAReaderError::IllformedTransition(nline));
+            return Err(ENFAReaderError::IllformedTransition(nline));
         }
-        let nfa = try!(nfa.add_transition(symb,src,dest).map_err(|e| NFAReaderError::NFA(e,nline)));;
+        let nfa = try!(nfa.add_transition(symb,src,dest).map_err(|e| ENFAReaderError::ENFA(e,nline)));;
         Ok(nfa)
     }
 
-    fn new_from_lines(lines : &mut Iterator<Item=io::Result<String>>) -> Result<NFA> {
-        let mut nfa = try!(NFABuilder::new().map_err(|e| NFAReaderError::NFA(e,0)));
+    // TODO swap order line <=> nline
+    fn read_e_transition(nfa: ENFABuilder, line : String, nline: usize) -> Result<ENFABuilder> {
+        let mut tokens = line.split_whitespace();
+        let src = try!(tokens
+            .next()
+            .ok_or(ENFAReaderError::IncompleteTransition(nline))
+            .and_then(|contents| ENFAReader::parse_nfa_error(contents,nline)));
+        let dest = try!(tokens
+            .next()
+            .ok_or(ENFAReaderError::IncompleteTransition(nline))
+            .and_then(|contents| ENFAReader::parse_nfa_error(contents,nline)));
+        if tokens.next().is_some() {
+            return Err(ENFAReaderError::IllformedTransition(nline));
+        }
+        let nfa = try!(nfa.add_e_transition(src,dest).map_err(|e| ENFAReaderError::ENFA(e,nline)));;
+        Ok(nfa)
+    }
+
+    fn read_transition(nfa: ENFABuilder, line : (usize,io::Result<String>))-> Result<ENFABuilder> {
+        let (nline,line) = line;
+        let line = try!(line);
+        match line.split_whitespace().count() {
+            3 => ENFAReader::read_complete_transition(nfa, line, nline),
+            2 => ENFAReader::read_e_transition(nfa, line, nline),
+            _ => unimplemented!()
+        }
+    }
+
+    fn new_from_lines(lines : &mut Iterator<Item=io::Result<String>>) -> Result<ENFA> {
+        let mut nfa = try!(ENFABuilder::new().map_err(|e| ENFAReaderError::ENFA(e,0)));
         let mut lines = lines
             .map(|line| {
                 line.and_then(|contents| Ok(contents.split('#').nth(0).unwrap().trim().to_owned()))
@@ -196,19 +223,19 @@ impl NFAReader {
                 let line = line.as_ref();
                 line.is_err() || !line.unwrap().is_empty()
             });
-        nfa = try!(NFAReader::read_start(nfa, &mut lines));
-        nfa = try!(NFAReader::read_finals(nfa, &mut lines));
+        nfa = try!(ENFAReader::read_start(nfa, &mut lines));
+        nfa = try!(ENFAReader::read_finals(nfa, &mut lines));
         for line in lines {
-            nfa = try!(NFAReader::read_transition(nfa, line));
+            nfa = try!(ENFAReader::read_transition(nfa, line));
         }
-        nfa.finalize().map_err(|e| NFAReaderError::NFA(e,0))
+        nfa.finalize().map_err(|e| ENFAReaderError::ENFA(e,0))
     }
 
-    /// Reads a NFA from a `&str`.
+    /// Reads a ENFA from a `&str`.
     ///
     /// # Description
     ///
-    /// * `nfa` - The string representation of the NFA.
+    /// * `nfa` - The string representation of the ENFA.
     ///
     /// # Examples
     ///
@@ -227,7 +254,7 @@ impl NFAReader {
     ///          b 1 2\n\
     ///          c 2 3\n\
     ///          a 3 0";
-    ///     let nfa = NFAReader::new_from_string(nfa);
+    ///     let nfa = ENFAReader::new_from_string(nfa);
     ///     match nfa {
     ///         Ok(nfa) => {
     ///            // Do stuff with the nfa
@@ -236,8 +263,8 @@ impl NFAReader {
     ///     }
     /// }
     /// ```
-    pub fn new_from_string(nfa: &str) -> Result<NFA> {
-        NFAReader::new_from_lines(&mut nfa.lines().map(|line| Ok(line.to_string())))
+    pub fn new_from_string(nfa: &str) -> Result<ENFA> {
+        ENFAReader::new_from_lines(&mut nfa.lines().map(|line| Ok(line.to_string())))
     }
 }
 
@@ -249,8 +276,8 @@ mod test {
     fn test_empty_file() {
         let model =
             "";
-        match NFAReader::new_from_string(model) {
-            Err(NFAReaderError::MissingStartingState) => assert!(true),
+        match ENFAReader::new_from_string(model) {
+            Err(ENFAReaderError::MissingStartingState) => assert!(true),
             _ => assert!(false, "MissingStartingState expected."),
         }
     }
@@ -259,8 +286,8 @@ mod test {
     fn test_start_not_a_number() {
         let model =
             "a";
-        match NFAReader::new_from_string(model) {
-            Err(NFAReaderError::Parse(_,line)) => assert!(line == 1),
+        match ENFAReader::new_from_string(model) {
+            Err(ENFAReaderError::Parse(_,line)) => assert!(line == 1),
             _ => assert!(false, "Parse expected."),
         }
     }
@@ -275,8 +302,8 @@ mod test {
              b 1 2\n\
              a 2 1\n\
              c 2 3";
-        match NFAReader::new_from_string(model) {
-            Err(NFAReaderError::Parse(_,line)) => assert!(line == 1),
+        match ENFAReader::new_from_string(model) {
+            Err(ENFAReaderError::Parse(_,line)) => assert!(line == 1),
             _ => assert!(false, "Parse expected."),
         }
     }
@@ -286,8 +313,8 @@ mod test {
         let model =
             "1\n\
             ";
-        match NFAReader::new_from_string(model) {
-            Err(NFAReaderError::MissingFinalStates) => assert!(true),
+        match ENFAReader::new_from_string(model) {
+            Err(ENFAReaderError::MissingFinalStates) => assert!(true),
             _ => assert!(false, "MissingFinalStates expected."),
         }
     }
@@ -297,8 +324,8 @@ mod test {
         let model =
             "1\n\
              2 a 3";
-        match NFAReader::new_from_string(model) {
-            Err(NFAReaderError::Parse(_,line)) => assert!(line == 2),
+        match ENFAReader::new_from_string(model) {
+            Err(ENFAReaderError::Parse(_,line)) => assert!(line == 2),
             _ => assert!(false, "Parse expected."),
         }
     }
@@ -308,7 +335,7 @@ mod test {
         let model =
             "0\n\
              3";
-        let _nfa = NFAReader::new_from_string(&model).unwrap();
+        let _nfa = ENFAReader::new_from_string(&model).unwrap();
     }
 
     #[test]
@@ -317,8 +344,8 @@ mod test {
             "0\n\
              3\n\
              a 0 1 8";
-        match NFAReader::new_from_string(model) {
-            Err(NFAReaderError::IllformedTransition(line)) => assert!(line == 3),
+        match ENFAReader::new_from_string(model) {
+            Err(ENFAReaderError::IllformedTransition(line)) => assert!(line == 3),
             _ => assert!(false, "IllformedTransition expected."),
         }
     }
@@ -329,8 +356,8 @@ mod test {
             "0\n\
              3\n\
              ab 2 3";
-        match NFAReader::new_from_string(model) {
-            Err(NFAReaderError::IllformedTransition(line)) => assert!(line == 3),
+        match ENFAReader::new_from_string(model) {
+            Err(ENFAReaderError::IllformedTransition(line)) => assert!(line == 3),
             _ => assert!(false, "IllformedTransition expected."),
         }
     }
@@ -341,8 +368,8 @@ mod test {
             "0\n\
              3\n\
              c b 3";
-        match NFAReader::new_from_string(model) {
-            Err(NFAReaderError::Parse(_,line)) => assert!(line == 3),
+        match ENFAReader::new_from_string(model) {
+            Err(ENFAReaderError::Parse(_,line)) => assert!(line == 3),
             _ => assert!(false, "Parse expected."),
         }
     }
@@ -353,8 +380,8 @@ mod test {
             "0\n\
              3\n\
              c 2 b";
-        match NFAReader::new_from_string(model) {
-            Err(NFAReaderError::Parse(_,line)) => assert!(line == 3),
+        match ENFAReader::new_from_string(model) {
+            Err(ENFAReaderError::Parse(_,line)) => assert!(line == 3),
             _ => assert!(false, "Parse expected."),
         }
     }
@@ -362,8 +389,8 @@ mod test {
     #[test]
     fn test_read_from_fake_file() {
         let file = "fake.txt";
-        match NFAReader::new_from_file(file) {
-            Err(NFAReaderError::Io(_)) => assert!(true),
+        match ENFAReader::new_from_file(file) {
+            Err(ENFAReaderError::Io(_)) => assert!(true),
             _ => assert!(false, "Io::Error expected."),
         }
     }
