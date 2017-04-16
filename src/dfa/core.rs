@@ -225,16 +225,16 @@ impl DFABuilding for DFABuilder {
 /// at each stage of the building process.
 impl DFABuilding for Result<DFABuilder> {
     fn add_start(self, state: usize) -> Result<DFABuilder> {
-        self.and_then(|mut dfa| {
+        self.map(|mut dfa| {
             dfa.start = Some(state);
-            Ok(dfa)
+            dfa
         })
     }
 
     fn add_final(self, state: usize) -> Result<DFABuilder> {
-        self.and_then(|mut dfa| {
+        self.map(|mut dfa| {
             dfa.finals.insert(state);
-            Ok(dfa)
+            dfa
         })
     }
 

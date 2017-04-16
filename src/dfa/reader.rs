@@ -188,7 +188,7 @@ impl DFAReader {
         let mut dfa = try!(DFABuilder::new().map_err(|e| DFAReaderError::DFA(e,0)));
         let mut lines = lines
             .map(|line| {
-                line.and_then(|contents| Ok(contents.split('#').nth(0).unwrap().trim().to_owned()))
+                line.map(|contents| contents.split('#').nth(0).unwrap().trim().to_owned())
             })
             .enumerate().map(|(nline,line)| (nline+1,line))
             .filter(|&(_,ref line)| {

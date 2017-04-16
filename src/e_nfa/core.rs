@@ -13,9 +13,9 @@ use std::fmt;                          // Formatter, format!, Display, Debug, wr
 use std::error;
 use std::result;
 
-/// The `NFAError` type.
+/// The `ENFAError` type.
 #[derive(Debug)]
-pub enum NFAError {
+pub enum ENFAError {
     /// The transition from state `usize` with symbol `char` is defined twice.
     DuplicatedTransition(char,usize),
     /// No final state is specified.
@@ -25,22 +25,22 @@ pub enum NFAError {
 }
 
 
-impl fmt::Display for NFAError {
+impl fmt::Display for ENFAError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            NFAError::DuplicatedTransition(symb,state) => write!(f, "Duplicated transition ('{}',{}).", symb, state),
-            NFAError::MissingFinalStates => write!(f, "Missing final states."),
-            NFAError::MissingStartingState => write!(f, "Missing starting state."),
+            ENFAError::DuplicatedTransition(symb,state) => write!(f, "Duplicated transition ('{}',{}).", symb, state),
+            ENFAError::MissingFinalStates => write!(f, "Missing final states."),
+            ENFAError::MissingStartingState => write!(f, "Missing starting state."),
         }
     }
 }
 
-impl error::Error for NFAError {
+impl error::Error for ENFAError {
     fn description(&self) -> &str {
         match *self {
-            NFAError::DuplicatedTransition(_,_) => "Duplicated transition.", 
-            NFAError::MissingFinalStates => "Missing final states.",
-            NFAError::MissingStartingState => "Missing starting state.",
+            ENFAError::DuplicatedTransition(_,_) => "Duplicated transition.", 
+            ENFAError::MissingFinalStates => "Missing final states.",
+            ENFAError::MissingStartingState => "Missing starting state.",
         }
     }
 
@@ -50,16 +50,17 @@ impl error::Error for NFAError {
     }
 }
 
-/// The type `NFA` represents a NonDeterministic Finite Automaton. The transitions
+/// The type `ENFA` represents a NonDeterministic Finite Automaton. The transitions
 /// of the automatan are stored in a hashtable.
 #[derive(Debug)]
-pub struct NFA {
-    transitions : HashMap<(char,usize),HashSet<usize>>,
-    start       : usize,
-    finals      : HashSet<usize>,
+pub struct ENFA {
+    transitions   : HashMap<(char,usize),HashSet<usize>>,
+    e_transitions : HashMap<usize,HashSet<usize>>,
+    start         : usize,
+    finals        : HashSet<usize>,
 }
 
-/// The `NFABuilder` follows the builder pattern and allows to create a Deterministic
+/// The `ENFABuilder` follows the builder pattern and allows to create a Deterministic
 /// Finite Automaton. The builder is moved at each call so it is necessary to bind
 /// to a new variable the return value for each function of the builder.
 ///
@@ -79,7 +80,7 @@ pub struct NFA {
 /// 
 /// fn main() {
 ///     // (abc)*
-///     let nfa = NFABuilder::new()
+///     let nfa = ENFABuilder::new()
 ///         .add_start(0)
 ///         .add_final(3)
 ///         .add_final(0)
@@ -98,12 +99,12 @@ pub struct NFA {
 /// use std::error::Error;
 /// 
 /// fn main() {
-///     let nfa = NFABuilder::new()
+///     let nfa = ENFABuilder::new()
 ///         .add_start(4)
 ///         .add_transition('t', 0, 1)
 ///         .finalize();
 ///     match nfa {
-///         Err(NFAError::MissingFinalStates) => assert!(true),
+///         Err(ENFAError::MissingFinalStates) => assert!(true),
 ///         _ => assert!(false),
 ///     }
 /// }
@@ -116,13 +117,13 @@ pub struct NFA {
 /// use std::error::Error;
 /// 
 /// fn main() {
-///     let nfa = NFABuilder::new()
+///     let nfa = ENFABuilder::new()
 ///         .add_start(4)
 ///         .add_transition('t', 0, 1)
 ///         .add_transition('t', 0, 2)
 ///         .finalize();
 ///     match nfa {
-///         Err(NFAError::DuplicatedTransition(symb,src)) => assert!((symb,src)==('t',0)),
+///         Err(ENFAError::DuplicatedTransition(symb,src)) => assert!((symb,src)==('t',0)),
 ///         _ => assert!(false),
 ///     }
 /// }
@@ -135,140 +136,169 @@ pub struct NFA {
 /// use std::error::Error;
 /// 
 /// fn main() {
-///     let nfa = NFABuilder::new()
+///     let nfa = ENFABuilder::new()
 ///         .add_final(4)
 ///         .add_transition('t', 0, 1)
 ///         .finalize();
 ///     match nfa {
-///         Err(NFAError::MissingStartingState) => assert!(true),
+///         Err(ENFAError::MissingStartingState) => assert!(true),
 ///         _ => assert!(false),
 ///     }
 /// }
 /// ```
 ///
 #[derive(Debug)]
-pub struct NFABuilder {
-    transitions : HashMap<(char,usize),HashSet<usize>>,
-    start       : Option<usize>,
-    finals      : HashSet<usize>,
+pub struct ENFABuilder {
+    transitions   : HashMap<(char,usize),HashSet<usize>>,
+    e_transitions : HashMap<usize,HashSet<usize>>,
+    start         : Option<usize>,
+    finals        : HashSet<usize>,
 }
 
-/// Alias for result::Result<T,NFAError>.
-pub type Result<T> = result::Result<T,NFAError>;
+/// Alias for result::Result<T,ENFAError>.
+pub type Result<T> = result::Result<T,ENFAError>;
 
-/// NFABuilding is the trait assiociated to the NFABuilder type. Each NFABuilder
-/// should implement NFABuilding trait.
+/// ENFABuilding is the trait assiociated to the ENFABuilder type. Each ENFABuilder
+/// should implement ENFABuilding trait.
 ///
-/// NFABuilder can generate some errors during the building stage. For instance,
+/// ENFABuilder can generate some errors during the building stage. For instance,
 /// one could try to insert a transition with two different destination states.
 ///
 /// #Errors
 ///
-/// If self contains a NFAerror then each function should transfer this error.
-pub trait NFABuilding {
-    /// Add a starting state to the NFA.
+/// If self contains a ENFAerror then each function should transfer this error.
+pub trait ENFABuilding {
+    /// Add a starting state to the ENFA.
     ///
     /// # Errors
     /// 
-    /// In the futur will return a NFAError::DuplicatedStartingState if
+    /// In the futur will return a ENFAError::DuplicatedStartingState if
     /// two starting states are added.
-    fn add_start(self, state: usize) -> Result<NFABuilder>;
+    fn add_start(mut self, state: usize) -> Result<ENFABuilder>;
 
-    /// Add a final state to the NFA.
-    fn add_final(self, state: usize) -> Result<NFABuilder>;
+    /// Add a final state to the ENFA.
+    fn add_final(mut self, state: usize) -> Result<ENFABuilder>;
 
-    /// Add a transition to the NFA.
+    /// Add a transition to the ENFA.
     ///
     /// # Errors
     ///
-    /// Return a NFAError::DuplicatedTransition(symb,src) if a transtion
+    /// Return a ENFAError::DuplicatedTransition(symb,src) if a transtion
     /// with the same symb and src has already been inserted, even if
     /// the destination state is the same.
-    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<NFABuilder>;
+    fn add_transition(mut self, symb: char, src: usize, dest: usize) -> Result<ENFABuilder>;
 
-    /// Finalize the building of the NFA.
+    fn add_e_transition(mut self, src: usize, dest: usize) -> Result<ENFABuilder>;
+
+    /// Finalize the building of the ENFA.
     ///
     /// # Errors
     ///
-    /// Return a NFAError::MissingStartingState if no starting state is specified.
+    /// Return a ENFAError::MissingStartingState if no starting state is specified.
     ///
-    /// Return a NFAError::MissingFinalStates if no final state is specified.
-    fn finalize(self) -> Result<NFA>;
+    /// Return a ENFAError::MissingFinalStates if no final state is specified.
+    fn finalize(self) -> Result<ENFA>;
 }
 
-impl NFABuilder {
-    /// Creates a new NFABuilder.
-    pub fn new() -> Result<NFABuilder> {
-        Ok(NFABuilder{transitions: HashMap::new(), start: None, finals: HashSet::new()})
+impl ENFABuilder {
+    /// Creates a new ENFABuilder.
+    pub fn new() -> Result<ENFABuilder> {
+        Ok(ENFABuilder{
+            transitions: HashMap::new(),
+            e_transitions: HashMap::new(),
+            start: None,
+            finals: HashSet::new()
+        })
     }
 }
 
-impl NFABuilding for NFABuilder {
-    fn add_start(self, state: usize) -> Result<NFABuilder> {
+impl ENFABuilding for ENFABuilder {
+    fn add_start(self, state: usize) -> Result<ENFABuilder> {
         Ok(self).add_start(state)
     }
 
-    fn add_final(self, state: usize) -> Result<NFABuilder> {
+    fn add_final(self, state: usize) -> Result<ENFABuilder> {
         Ok(self).add_final(state)
     }
 
-    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<NFABuilder> {
+    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<ENFABuilder> {
         Ok(self).add_transition(symb,src,dest)
     }
 
-    fn finalize(self) -> Result<NFA> {
+    fn add_e_transition(self, src: usize, dest: usize) -> Result<ENFABuilder> {
+        Ok(self).add_e_transition(src,dest)
+    }
+
+    fn finalize(self) -> Result<ENFA> {
         Ok(self).finalize()
     }
 }
 
 
-/// Implementing NFABuilding trait for Result<NFABuilder> allows
-/// to chain the return value of the NFABuilder instead of unwrapping them
+/// Implementing ENFABuilding trait for Result<ENFABuilder> allows
+/// to chain the return value of the ENFABuilder instead of unwrapping them
 /// at each stage of the building process.
-impl NFABuilding for Result<NFABuilder> {
-    fn add_start(self, state: usize) -> Result<NFABuilder> {
-        self.map(|mut nfa| {
+impl ENFABuilding for Result<ENFABuilder> {
+    fn add_start(self, state: usize) -> Result<ENFABuilder> {
+        self.and_then(|mut nfa| {
             nfa.start = Some(state);
-            nfa
+            Ok(nfa)
         })
     }
 
-    fn add_final(self, state: usize) -> Result<NFABuilder> {
-        self.map(|mut nfa| {
+    fn add_final(self, state: usize) -> Result<ENFABuilder> {
+        self.and_then(|mut nfa| {
             nfa.finals.insert(state);
-            nfa
+            Ok(nfa)
         })
     }
 
-    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<NFABuilder> {
+    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<ENFABuilder> {
+        self.and_then(|mut nfa| {
+            {
+                // A block is mandatory here because states borrow a value inside nfa.
+                // Ok(nfa) moves nfa but if states is in the same block it will has the
+                // same lifetime and it's not possible to move a borrowed value.
+                let states = nfa.transitions.entry((symb,src)).or_insert(HashSet::new());
+                (*states).insert(dest);
+            }
+            Ok(nfa)
+        })
+    }
+
+    fn add_e_transition(self, src: usize, dest: usize) -> Result<ENFABuilder> {
         self.map(|mut nfa| {
             {
-                // `states` is a mutable reference to a value inside `transitions` (see or_insert).
-                // It 's not possible to return nfa if states is in the same scope, because the
-                // return statement will try to move nfa, including the `transitions` field while
-                // states will still have a mutable refrence of `transitions`.
-                let states = nfa.transitions.entry((symb,src)).or_insert(HashSet::new());
+                // A block is mandatory here because states borrow a value inside nfa.
+                // Ok(nfa) moves nfa but if states is in the same block it will has the
+                // same lifetime and it's not possible to move a borrowed value.
+                let states = nfa.e_transitions.entry(src).or_insert(HashSet::new());
                 (*states).insert(dest);
             }
             nfa
         })
     }
 
-    fn finalize(self) -> Result<NFA> {
+    fn finalize(self) -> Result<ENFA> {
         self.and_then(|nfa| {
             if nfa.start.is_none() {
-                Err(NFAError::MissingStartingState)
+                Err(ENFAError::MissingStartingState)
             } else if nfa.finals.is_empty() {
-                Err(NFAError::MissingFinalStates)
+                Err(ENFAError::MissingFinalStates)
             } else {
-                Ok(NFA{transitions: nfa.transitions, start: nfa.start.unwrap(), finals: nfa.finals})
+                Ok(ENFA{
+                    transitions: nfa.transitions,
+                    e_transitions: nfa.e_transitions,
+                    start: nfa.start.unwrap(),
+                    finals: nfa.finals
+                })
             }
         })
     }
 }
 
-impl NFA {
-    /// Test if an input string is a word of the language defined by the NFA.
+impl ENFA {
+    /// Test if an input string is a word of the language defined by the ENFA.
     ///
     /// # Examples
     ///
@@ -280,7 +310,7 @@ impl NFA {
     /// 
     /// fn main() {
     ///     // (abc)*
-    ///     let nfa = NFABuilder::new()
+    ///     let nfa = ENFABuilder::new()
     ///         .add_start(0)
     ///         .add_final(3)
     ///         .add_final(0)
@@ -314,6 +344,11 @@ impl NFA {
                             self.transitions
                                 .get(&(c,*state))
                                 .map(|trans| acc.union(trans).cloned().collect())
+                                //.map(|nexts| {
+                                    //self.e_transitions
+                                        //.get(&*state)
+                                        //.map(|trans| nexts.union(nexts).cloned.collect())
+                                //})
                         })
                     })
                 })
@@ -324,7 +359,7 @@ impl NFA {
     }
 }
 
-impl fmt::Display for NFA {
+impl fmt::Display for ENFA {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(writeln!(f, "START: {}", self.start));
         try!(writeln!(f, "FINALS:"));
@@ -336,6 +371,9 @@ impl fmt::Display for NFA {
             let (c,s) = *tr;
             try!(writeln!(f, "  ({},{}) => {:?}", c, s, d));
         }
+        for (tr,d) in self.e_transitions.iter() {
+            try!(writeln!(f, "  {} => {:?}", tr, d));
+        }
         write!(f, "")
     }
 }
@@ -346,7 +384,7 @@ mod tests {
 
     #[test]
     fn test_nfa() {
-        let nfa = NFABuilder::new()
+        let nfa = ENFABuilder::new()
             .add_start(0)
             .add_final(3)
             .add_transition('a', 0, 1)
@@ -372,7 +410,7 @@ mod tests {
 
     #[test]
     fn test_nfa_builder() {
-        let _nfa = NFABuilder::new()
+        let _nfa = ENFABuilder::new()
             .add_start(0)
             .add_final(3)
             .add_transition('a', 0, 1)
@@ -386,24 +424,24 @@ mod tests {
 
     #[test]
     fn test_nfa_builder_missing_start() {
-        let nfa = NFABuilder::new()
+        let nfa = ENFABuilder::new()
             .add_final(3)
             .add_transition('a', 0, 1)
             .finalize();
         match nfa {
-            Err(NFAError::MissingStartingState) => assert!(true),
+            Err(ENFAError::MissingStartingState) => assert!(true),
             _ => assert!(false, "MissingStartingState expected."),
         }
     }
 
     #[test]
     fn test_nfa_builder_missing_finals() {
-        let nfa = NFABuilder::new()
+        let nfa = ENFABuilder::new()
             .add_start(0)
             .add_transition('a', 0, 1)
             .finalize();
         match nfa {
-            Err(NFAError::MissingFinalStates) => assert!(true),
+            Err(ENFAError::MissingFinalStates) => assert!(true),
             _ => assert!(false, "MissingFinalStates expected."),
         }
     }

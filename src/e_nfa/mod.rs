@@ -6,6 +6,5 @@
 // This file may not be copied, modified, or distributed
 // except according to those terms.
 
-pub mod dfa;
-pub mod nfa;
-pub mod e_nfa;
+pub mod core;
+pub mod reader;
