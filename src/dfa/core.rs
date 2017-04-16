@@ -170,10 +170,10 @@ pub trait DFABuilding {
     /// 
     /// In the futur will return a DFAError::DuplicatedStartingState if
     /// two starting states are added.
-    fn add_start(mut self, state: usize) -> Result<DFABuilder>;
+    fn add_start(self, state: usize) -> Result<DFABuilder>;
 
     /// Add a final state to the DFA.
-    fn add_final(mut self, state: usize) -> Result<DFABuilder>;
+    fn add_final(self, state: usize) -> Result<DFABuilder>;
 
     /// Add a transition to the DFA.
     ///
@@ -182,7 +182,7 @@ pub trait DFABuilding {
     /// Return a DFAError::DuplicatedTransition(symb,src) if a transtion
     /// with the same symb and src has already been inserted, even if
     /// the destination state is the same.
-    fn add_transition(mut self, symb: char, src: usize, dest: usize) -> Result<DFABuilder>;
+    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<DFABuilder>;
 
     /// Finalize the building of the DFA.
     ///

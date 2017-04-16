@@ -172,10 +172,10 @@ pub trait NFABuilding {
     /// 
     /// In the futur will return a NFAError::DuplicatedStartingState if
     /// two starting states are added.
-    fn add_start(mut self, state: usize) -> Result<NFABuilder>;
+    fn add_start(self, state: usize) -> Result<NFABuilder>;
 
     /// Add a final state to the NFA.
-    fn add_final(mut self, state: usize) -> Result<NFABuilder>;
+    fn add_final(self, state: usize) -> Result<NFABuilder>;
 
     /// Add a transition to the NFA.
     ///
@@ -184,7 +184,7 @@ pub trait NFABuilding {
     /// Return a NFAError::DuplicatedTransition(symb,src) if a transtion
     /// with the same symb and src has already been inserted, even if
     /// the destination state is the same.
-    fn add_transition(mut self, symb: char, src: usize, dest: usize) -> Result<NFABuilder>;
+    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<NFABuilder>;
 
     /// Finalize the building of the NFA.
     ///
