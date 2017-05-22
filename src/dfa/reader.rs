@@ -9,7 +9,7 @@
 extern crate itertools;
 
 use std::io;                           // Error
-use std::io::{Read,BufReader,BufRead}; // read_to_string
+use std::io::{BufReader,BufRead}; // read_to_string
 use std::path::Path;
 use std::num;                          // ParseIntError
 use std::fmt;                          // Formatter, format!, Display, Debug, write!

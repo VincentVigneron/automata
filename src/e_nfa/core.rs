@@ -174,10 +174,10 @@ pub trait ENFABuilding {
     /// 
     /// In the futur will return a ENFAError::DuplicatedStartingState if
     /// two starting states are added.
-    fn add_start(mut self, state: usize) -> Result<ENFABuilder>;
+    fn add_start(self, state: usize) -> Result<ENFABuilder>;
 
     /// Add a final state to the ENFA.
-    fn add_final(mut self, state: usize) -> Result<ENFABuilder>;
+    fn add_final(self, state: usize) -> Result<ENFABuilder>;
 
     /// Add a transition to the ENFA.
     ///
@@ -186,9 +186,9 @@ pub trait ENFABuilding {
     /// Return a ENFAError::DuplicatedTransition(symb,src) if a transtion
     /// with the same symb and src has already been inserted, even if
     /// the destination state is the same.
-    fn add_transition(mut self, symb: char, src: usize, dest: usize) -> Result<ENFABuilder>;
+    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<ENFABuilder>;
 
-    fn add_e_transition(mut self, src: usize, dest: usize) -> Result<ENFABuilder>;
+    fn add_e_transition(self, src: usize, dest: usize) -> Result<ENFABuilder>;
 
     /// Finalize the building of the ENFA.
     ///
