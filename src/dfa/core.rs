@@ -8,6 +8,8 @@
 
 extern crate itertools;
 
+#![deny(warnings, missing_docs)]
+
 use std::collections::{HashSet,HashMap};
 use std::fmt;                          // Formatter, format!, Display, Debug, write!
 use std::error;
