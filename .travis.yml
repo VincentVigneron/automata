@@ -4,6 +4,7 @@ dist: trusty
 os:
     -linux
 
+
 # Run builds for all the supported traints
 rust:
     - nightly
