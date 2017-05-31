@@ -61,12 +61,14 @@ pub struct DFA {
     start       : usize,
     finals      : HashSet<usize>,
 }
+/*
 /// a
 struct SrcState( u64 );
 /// a
 struct DstState( u64 );
 /// a
 struct Symbol( char );
+*/
 
 /// The `DFABuilder` follows the builder pattern and allows to create a Deterministic
 /// Finite Automaton. The builder is moved at each call so it is necessary to bind
