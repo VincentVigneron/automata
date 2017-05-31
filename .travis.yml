@@ -3,6 +3,7 @@ cache: cargo
 dist: trusty
 os:
     -linux
+    -osx
 
 # Run builds for all the supported trains
 rust:
