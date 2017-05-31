@@ -6,5 +6,7 @@
 // This file may not be copied, modified, or distributed
 // except according to those terms.
 
+/// dfa core api
 pub mod core;
+/// dfa core reader
 pub mod reader;

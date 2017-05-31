@@ -6,6 +6,13 @@
 // This file may not be copied, modified, or distributed
 // except according to those terms.
 
+#![deny(warnings, missing_docs)]
+
+//! Documentation for automaton api
+
+/// dfa api
 pub mod dfa;
+/// nfa api
 pub mod nfa;
+/// e_nfa api
 pub mod e_nfa;

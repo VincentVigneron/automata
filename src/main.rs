@@ -21,6 +21,7 @@ fn main() {
         .add_transition('t', 2, 3)
         .add_transition('o', 3, 0)
         .finalize();
+
     match dfa {
         Ok(dfa) => {
             println!("{}", dfa);
@@ -31,7 +32,7 @@ fn main() {
             println!("{:?}", dfa.test("tot"));
             println!("{:?}", dfa.test("totot"));
             println!("{:?}", dfa.test("totototo"));
-        },
+        }
         _ => process::exit(1),
     }
 }

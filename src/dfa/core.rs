@@ -6,9 +6,9 @@
 // This file may not be copied, modified, or distributed
 // except according to those terms.
 
+
 extern crate itertools;
 
-#![deny(warnings, missing_docs)]
 
 use std::collections::{HashSet,HashMap};
 use std::fmt;                          // Formatter, format!, Display, Debug, write!
@@ -25,6 +25,7 @@ pub enum DFAError {
     /// No starting state is specified.
     MissingStartingState,
 }
+
 
 
 impl fmt::Display for DFAError {
@@ -60,6 +61,12 @@ pub struct DFA {
     start       : usize,
     finals      : HashSet<usize>,
 }
+/// a
+struct SrcState( u64 );
+/// a
+struct DstState( u64 );
+/// a
+struct Symbol( char );
 
 /// The `DFABuilder` follows the builder pattern and allows to create a Deterministic
 /// Finite Automaton. The builder is moved at each call so it is necessary to bind

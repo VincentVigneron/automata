@@ -188,6 +188,13 @@ pub trait ENFABuilding {
     /// the destination state is the same.
     fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<ENFABuilder>;
 
+    /// Add an epsilon transition to the ENFA.
+    ///
+    /// # Errors
+    ///
+    /// Return a ENFAError::DuplicatedTransition(symb,src) if a transtion
+    /// with the same symb and src has already been inserted, even if
+    /// the destination state is the same.
     fn add_e_transition(self, src: usize, dest: usize) -> Result<ENFABuilder>;
 
     /// Finalize the building of the ENFA.
