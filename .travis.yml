@@ -24,6 +24,7 @@ addons:
             - cmake
             - gcc
             - binutils-dev
+            - libbfd-dev
 
 script:
     - cargo build
