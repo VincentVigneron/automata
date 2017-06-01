@@ -9,3 +9,7 @@ name = "dfa"
 
 [dependencies]
 itertools = "0.4"
+
+[badges]
+travis-ci = { repository = "Razican/vsop87-rs", branch = "master" }
+codecov = { repository = "Razican/vsop87-rs", branch = "master", service = "github" }
