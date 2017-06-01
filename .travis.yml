@@ -39,7 +39,7 @@ after_success:
             sudo make install &&
             cd ../.. &&
             rm -rf kcov-master &&
-            kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" target/debug/automaton-* &&
+            kcov --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/automaton-* &&
             bash <(curl -s https://codecov.io/bash) &&
             echo "Uploaded code coverage"
         fi
