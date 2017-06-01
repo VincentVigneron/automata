@@ -37,7 +37,6 @@ after_success:
     - |
         if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
             kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo target/kcov target/debug/automaton-* &&
-            bash <(curl -s https://codecov.io/bash) &&
             echo "Uploaded code coverage"
         fi
     - |
