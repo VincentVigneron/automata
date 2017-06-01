@@ -116,9 +116,9 @@ impl NFAReader {
     /// # Examples
     ///
     /// ```
-    /// extern crate automata;
+    /// extern crate automaton;
     ///
-    /// use automata::nfa::reader::*;
+    /// use automaton::nfa::reader::*;
     /// use std::error::Error;
     /// 
     /// fn main() {
@@ -213,9 +213,9 @@ impl NFAReader {
     /// # Examples
     ///
     /// ```
-    /// extern crate automata;
+    /// extern crate automaton;
     ///
-    /// use automata::nfa::reader::*;
+    /// use automaton::nfa::reader::*;
     /// use std::error::Error;
     /// 
     /// fn main() {

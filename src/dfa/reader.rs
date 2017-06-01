@@ -116,9 +116,9 @@ impl DFAReader {
     /// # Examples
     ///
     /// ```
-    /// extern crate automata;
+    /// extern crate automaton;
     ///
-    /// use automata::dfa::reader::*;
+    /// use automaton::dfa::reader::*;
     /// use std::error::Error;
     /// 
     /// fn main() {
@@ -213,9 +213,9 @@ impl DFAReader {
     /// # Examples
     ///
     /// ```
-    /// extern crate automata;
+    /// extern crate automaton;
     ///
-    /// use automata::dfa::reader::*;
+    /// use automaton::dfa::reader::*;
     /// use std::error::Error;
     /// 
     /// fn main() {

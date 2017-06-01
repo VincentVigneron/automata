@@ -6,10 +6,10 @@
 // This file may not be copied, modified, or distributed
 // except according to those terms.
 
-extern crate automata;
+extern crate automaton;
 
 use std::process;
-use automata::dfa::core::*;
+use automaton::dfa::core::*;
 
 fn main() {
     // (toto)*

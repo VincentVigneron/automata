@@ -51,7 +51,7 @@ impl error::Error for ENFAError {
 }
 
 /// The type `ENFA` represents a NonDeterministic Finite Automaton. The transitions
-/// of the automatan are stored in a hashtable.
+/// of the automatonn are stored in a hashtable.
 #[derive(Debug)]
 pub struct ENFA {
     transitions   : HashMap<(char,usize),HashSet<usize>>,
@@ -73,9 +73,9 @@ pub struct ENFA {
 /// # Examples
 ///
 /// ```
-/// extern crate automata;
+/// extern crate automaton;
 ///
-/// use automata::e_nfa::core::*;
+/// use automaton::e_nfa::core::*;
 ///
 /// fn main() {
 ///     // (abc)*
@@ -92,9 +92,9 @@ pub struct ENFA {
 /// ```
 ///
 /// ```
-/// extern crate automata;
+/// extern crate automaton;
 ///
-/// use automata::e_nfa::core::*;
+/// use automaton::e_nfa::core::*;
 ///
 /// fn main() {
 ///     let nfa = ENFABuilder::new()
@@ -109,9 +109,9 @@ pub struct ENFA {
 /// ```
 ///
 /// ```
-/// extern crate automata;
+/// extern crate automaton;
 ///
-/// use automata::e_nfa::core::*;
+/// use automaton::e_nfa::core::*;
 ///
 /// fn main() {
 ///     let nfa = ENFABuilder::new()
@@ -278,9 +278,9 @@ impl ENFA {
     /// # Examples
     ///
     /// ```
-    /// extern crate automata;
+    /// extern crate automaton;
     ///
-    /// use automata::e_nfa::core::*;
+    /// use automaton::e_nfa::core::*;
     /// 
     /// fn main() {
     ///     // (abc)*

@@ -54,7 +54,7 @@ impl error::Error for DFAError {
 }
 
 /// The type `DFA` represents a Deterministic Finite Automaton. The transitions
-/// of the automatan are stored in a hashtable.
+/// of the automatonn are stored in a hashtable.
 #[derive(Debug)]
 pub struct DFA {
     transitions : HashMap<(char,usize),usize>,
@@ -83,9 +83,9 @@ struct Symbol( char );
 /// # Examples
 ///
 /// ```
-/// extern crate automata;
+/// extern crate automaton;
 ///
-/// use automata::dfa::core::*;
+/// use automaton::dfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -101,9 +101,9 @@ struct Symbol( char );
 /// ```
 ///
 /// ```
-/// extern crate automata;
+/// extern crate automaton;
 ///
-/// use automata::dfa::core::*;
+/// use automaton::dfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -119,9 +119,9 @@ struct Symbol( char );
 /// ```
 ///
 /// ```
-/// extern crate automata;
+/// extern crate automaton;
 ///
-/// use automata::dfa::core::*;
+/// use automaton::dfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -138,9 +138,9 @@ struct Symbol( char );
 /// ```
 ///
 /// ```
-/// extern crate automata;
+/// extern crate automaton;
 ///
-/// use automata::dfa::core::*;
+/// use automaton::dfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -277,9 +277,9 @@ impl DFA {
     /// # Examples
     ///
     /// ```
-    /// extern crate automata;
+    /// extern crate automaton;
     ///
-    /// use automata::dfa::core::*;
+    /// use automaton::dfa::core::*;
     /// use std::error::Error;
     /// 
     /// fn main() {

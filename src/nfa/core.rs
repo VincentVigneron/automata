@@ -51,7 +51,7 @@ impl error::Error for NFAError {
 }
 
 /// The type `NFA` represents a NonDeterministic Finite Automaton. The transitions
-/// of the automatan are stored in a hashtable.
+/// of the automatonn are stored in a hashtable.
 #[derive(Debug)]
 pub struct NFA {
     transitions : HashMap<(char,usize),HashSet<usize>>,
@@ -72,9 +72,9 @@ pub struct NFA {
 /// # Examples
 ///
 /// ```
-/// extern crate automata;
+/// extern crate automaton;
 ///
-/// use automata::nfa::core::*;
+/// use automaton::nfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -92,9 +92,9 @@ pub struct NFA {
 /// ```
 ///
 /// ```
-/// extern crate automata;
+/// extern crate automaton;
 ///
-/// use automata::nfa::core::*;
+/// use automaton::nfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -110,9 +110,9 @@ pub struct NFA {
 /// ```
 ///
 /// ```
-/// extern crate automata;
+/// extern crate automaton;
 ///
-/// use automata::nfa::core::*;
+/// use automaton::nfa::core::*;
 /// use std::error::Error;
 /// 
 /// fn main() {
@@ -249,9 +249,9 @@ impl NFA {
     /// # Examples
     ///
     /// ```
-    /// extern crate automata;
+    /// extern crate automaton;
     ///
-    /// use automata::nfa::core::*;
+    /// use automaton::nfa::core::*;
     /// use std::error::Error;
     /// 
     /// fn main() {

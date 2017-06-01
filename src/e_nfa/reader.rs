@@ -116,9 +116,9 @@ impl ENFAReader {
     /// # Examples
     ///
     /// ```
-    /// extern crate automata;
+    /// extern crate automaton;
     ///
-    /// use automata::e_nfa::reader::*;
+    /// use automaton::e_nfa::reader::*;
     /// use std::error::Error;
     /// 
     /// fn main() {
@@ -240,9 +240,9 @@ impl ENFAReader {
     /// # Examples
     ///
     /// ```
-    /// extern crate automata;
+    /// extern crate automaton;
     ///
-    /// use automata::e_nfa::reader::*;
+    /// use automaton::e_nfa::reader::*;
     /// use std::error::Error;
     /// 
     /// fn main() {
