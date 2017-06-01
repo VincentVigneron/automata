@@ -117,25 +117,6 @@ pub struct NFA {
 /// 
 /// fn main() {
 ///     let nfa = NFABuilder::new()
-///         .add_start(4)
-///         .add_transition('t', 0, 1)
-///         .add_transition('t', 0, 2)
-///         .finalize();
-///     match nfa {
-///         Err(NFAError::DuplicatedTransition(symb,src)) => assert!((symb,src)==('t',0)),
-///         _ => assert!(false),
-///     }
-/// }
-/// ```
-///
-/// ```
-/// extern crate automata;
-///
-/// use automata::nfa::core::*;
-/// use std::error::Error;
-/// 
-/// fn main() {
-///     let nfa = NFABuilder::new()
 ///         .add_final(4)
 ///         .add_transition('t', 0, 1)
 ///         .finalize();
@@ -179,11 +160,6 @@ pub trait NFABuilding {
 
     /// Add a transition to the NFA.
     ///
-    /// # Errors
-    ///
-    /// Return a NFAError::DuplicatedTransition(symb,src) if a transtion
-    /// with the same symb and src has already been inserted, even if
-    /// the destination state is the same.
     fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<NFABuilder>;
 
     /// Finalize the building of the NFA.

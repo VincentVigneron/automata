@@ -75,9 +75,8 @@ pub struct ENFA {
 /// ```
 /// extern crate automata;
 ///
-/// use automata::nfa::core::*;
-/// use std::error::Error;
-/// 
+/// use automata::e_nfa::core::*;
+///
 /// fn main() {
 ///     // (abc)*
 ///     let nfa = ENFABuilder::new()
@@ -95,9 +94,8 @@ pub struct ENFA {
 /// ```
 /// extern crate automata;
 ///
-/// use automata::nfa::core::*;
-/// use std::error::Error;
-/// 
+/// use automata::e_nfa::core::*;
+///
 /// fn main() {
 ///     let nfa = ENFABuilder::new()
 ///         .add_start(4)
@@ -113,28 +111,8 @@ pub struct ENFA {
 /// ```
 /// extern crate automata;
 ///
-/// use automata::nfa::core::*;
-/// use std::error::Error;
-/// 
-/// fn main() {
-///     let nfa = ENFABuilder::new()
-///         .add_start(4)
-///         .add_transition('t', 0, 1)
-///         .add_transition('t', 0, 2)
-///         .finalize();
-///     match nfa {
-///         Err(ENFAError::DuplicatedTransition(symb,src)) => assert!((symb,src)==('t',0)),
-///         _ => assert!(false),
-///     }
-/// }
-/// ```
+/// use automata::e_nfa::core::*;
 ///
-/// ```
-/// extern crate automata;
-///
-/// use automata::nfa::core::*;
-/// use std::error::Error;
-/// 
 /// fn main() {
 ///     let nfa = ENFABuilder::new()
 ///         .add_final(4)
@@ -181,20 +159,10 @@ pub trait ENFABuilding {
 
     /// Add a transition to the ENFA.
     ///
-    /// # Errors
-    ///
-    /// Return a ENFAError::DuplicatedTransition(symb,src) if a transtion
-    /// with the same symb and src has already been inserted, even if
-    /// the destination state is the same.
     fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<ENFABuilder>;
 
     /// Add an epsilon transition to the ENFA.
     ///
-    /// # Errors
-    ///
-    /// Return a ENFAError::DuplicatedTransition(symb,src) if a transtion
-    /// with the same symb and src has already been inserted, even if
-    /// the destination state is the same.
     fn add_e_transition(self, src: usize, dest: usize) -> Result<ENFABuilder>;
 
     /// Finalize the building of the ENFA.
@@ -312,8 +280,7 @@ impl ENFA {
     /// ```
     /// extern crate automata;
     ///
-    /// use automata::nfa::core::*;
-    /// use std::error::Error;
+    /// use automata::e_nfa::core::*;
     /// 
     /// fn main() {
     ///     // (abc)*

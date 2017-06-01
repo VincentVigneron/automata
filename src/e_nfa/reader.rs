@@ -118,7 +118,7 @@ impl ENFAReader {
     /// ```
     /// extern crate automata;
     ///
-    /// use automata::nfa::reader::*;
+    /// use automata::e_nfa::reader::*;
     /// use std::error::Error;
     /// 
     /// fn main() {
@@ -242,7 +242,7 @@ impl ENFAReader {
     /// ```
     /// extern crate automata;
     ///
-    /// use automata::nfa::reader::*;
+    /// use automata::e_nfa::reader::*;
     /// use std::error::Error;
     /// 
     /// fn main() {
@@ -339,6 +339,7 @@ mod test {
     }
 
     #[test]
+    #[should_panic]
     fn test_transitions_with_at_least_four_elements() {
         let model =
             "0\n\
