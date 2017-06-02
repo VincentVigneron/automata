@@ -1,5 +1,5 @@
 language: rust
-sudo: required
+sudo: true
 os:
     - linux
 dist: trusty
@@ -16,14 +16,28 @@ script:
     - cargo build --verbose
     - cargo test --verbose --no-run
 
+
+addons:
+    apt:
+        packages:
+            - libcurl4-openssl-dev
+            - libelf-dev
+            - libdw-dev
+            - cmake
+            - gcc
+            - binutils-dev
+            - libiberty-dev
+
 # Coverage report
 # Upload docs
 after_success:
     - |
         if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
-            sudo docker pull ragnaroek/kcov_head:latest &&
+            wget https://github.com/SimonKagstrom/kcov/archive/v33.tar.gz &&
+            tar xzf v33.tar.gz && mkdir kcov-33/build && cd kcov-33/build && cmake .. && make &&
+            sudo make install && cd ../.. &&
             file=`find target/debug -maxdepth 1 -executable -name "automaton*"` &&
-            docker run --security-opt seccomp=unconfined -v $(pwd):/source ragnaroek/kcov_head:latest --exclude-pattern=/source/.cargo,/usr/lib --include-path=/source/src --verify /source/target/cov /source/$file &&
+            kcov --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/$file &&
             bash <(curl -s https://codecov.io/bash) &&
             echo "Uploaded code coverage"
         fi
