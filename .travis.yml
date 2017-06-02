@@ -2,7 +2,7 @@ language: rust
 sudo: false
 os:
     - linux
-dist: trusty
+dist: xenial
 matrix:
     fast_finish: true
     include:
