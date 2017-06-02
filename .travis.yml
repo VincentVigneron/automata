@@ -8,7 +8,7 @@ services:
     - docker
 
 before_install:
-    - docker pull ragnaroek/kcov:latest
+    - docker pull ragnaroek/kcov_head:latest
 
 rust:
     - stable
@@ -29,7 +29,7 @@ script:
 after_success:
     - |
         if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
-            docker run --security-opt seccomp=unconfined -v $(pwd):/source kcov:latest --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/automaton-* &&
+            docker run --security-opt seccomp=unconfined -v $(pwd):/source kcov_head:latest --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/automaton-* &&
             bash <(curl -s https://codecov.io/bash) &&
             echo "Uploaded code coverage"
         fi
