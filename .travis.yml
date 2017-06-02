@@ -34,7 +34,7 @@ after_success:
             wget https://github.com/SimonKagstrom/kcov/archive/v33.tar.gz &&
             tar xzf v33.tar.gz && mkdir kcov-33/build && cd kcov-33/build && cmake .. && make &&
             sudo make install && cd ../.. &&
-            kcov --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/automaton- &&
+            kcov --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/automaton-* &&
             bash <(curl -s https://codecov.io/bash) &&
             echo "Uploaded code coverage"
         fi
