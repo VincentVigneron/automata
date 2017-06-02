@@ -1,8 +1,14 @@
 language: rust
-sudo: false
+sudo: required
 os:
     - linux
 dist: trusty
+
+services:
+    - docker
+
+before_install:
+    - docker pull ragnaroek/kcov:v33
 
 rust:
     - stable
@@ -10,28 +16,15 @@ rust:
     - 1.16.0
 
 cache:
-    apt: true
     directories:
         - target/debug/deps
         - target/debug/build
-
-addons:
-    apt:
-        packages:
-            - libcurl4-openssl-dev
-            - libelf-dev
-            - libdw-dev
-            - cmake
-            - gcc
-            - binutils-dev
-            - libiberty-dev
 
 # Coverage report
 # Upload docs
 after_success:
     - |
         if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
-            docker pull ragnaroek/kcov:v33
             docker run --security-opt seccomp=unconfined -v $(pwd):/source kcov:v33 --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/automaton-* &&
             bash <(curl -s https://codecov.io/bash) &&
             echo "Uploaded code coverage"
