@@ -29,7 +29,9 @@ after_success:
             sudo docker pull ragnaroek/kcov_head:latest &&
             docker images &&
             ls target/debug &&
-            docker run --security-opt seccomp=unconfined -v $(pwd):/source ragnaroek/kcov_head:latest --exclude-pattern=/.cargo,/usr/lib --verify /source/target/cov /source/target/debug/automaton-* &&
+            file=`find target/debug -maxdepth 1 -executable -name "automaton*"` &&
+            echo $file &&
+            docker run --security-opt seccomp=unconfined -v $(pwd):/source ragnaroek/kcov_head:latest --exclude-pattern=/.cargo,/usr/lib --verify /source/target/cov /source/$file &&
             bash <(curl -s https://codecov.io/bash) &&
             echo "Uploaded code coverage"
         fi
