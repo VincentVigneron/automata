@@ -1,5 +1,5 @@
 language: rust
-sudo: true
+sudo: false
 os:
     - linux
 dist: trusty
@@ -31,10 +31,8 @@ addons:
 after_success:
     - |
         if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
-            wget https://github.com/SimonKagstrom/kcov/archive/v33.tar.gz &&
-            tar xzf v33.tar.gz && mkdir kcov-33/build && cd kcov-33/build && cmake .. && make &&
-            sudo make install && cd ../.. &&
-            kcov --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/automaton-* &&
+            docker pull ragnaroek/kcov:v33
+            docker run --security-opt seccomp=unconfined -v $(pwd):/source kcov:v33 --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/automaton-* &&
             bash <(curl -s https://codecov.io/bash) &&
             echo "Uploaded code coverage"
         fi
