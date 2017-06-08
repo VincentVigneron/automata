@@ -175,16 +175,20 @@ pub type Result<T> = result::Result<T,DFAError>;
 ///
 /// If self contains a DFAerror then each function should transfer this error.
 pub trait DFABuilding {
+    /// Type of DFA returned
+    type Type: Sized;
+    /// Type of the builder used
+    type Builder: Sized;
     /// Add a starting state to the DFA.
     ///
     /// # Errors
     /// 
     /// In the futur will return a DFAError::DuplicatedStartingState if
     /// two starting states are added.
-    fn add_start(self, state: usize) -> Result<DFABuilder>;
+    fn add_start(self, state: usize) -> Result<Self::Builder>;
 
     /// Add a final state to the DFA.
-    fn add_final(self, state: usize) -> Result<DFABuilder>;
+    fn add_final(self, state: usize) -> Result<Self::Builder>;
 
     /// Add a transition to the DFA.
     ///
@@ -193,7 +197,7 @@ pub trait DFABuilding {
     /// Return a DFAError::DuplicatedTransition(symb,src) if a transtion
     /// with the same symb and src has already been inserted, even if
     /// the destination state is the same.
-    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<DFABuilder>;
+    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<Self::Builder>;
 
     /// Finalize the building of the DFA.
     ///
@@ -202,7 +206,7 @@ pub trait DFABuilding {
     /// Return a DFAError::MissingStartingState if no starting state is specified.
     ///
     /// Return a DFAError::MissingFinalStates if no final state is specified.
-    fn finalize(self) -> Result<DFA>;
+    fn finalize(self) -> Result<Self::Type>;
 }
 
 impl DFABuilder {
@@ -213,19 +217,22 @@ impl DFABuilder {
 }
 
 impl DFABuilding for DFABuilder {
-    fn add_start(self, state: usize) -> Result<DFABuilder> {
+    type Type = DFA;
+    type Builder = DFABuilder;
+
+    fn add_start(self, state: usize) -> Result<Self::Builder> {
         Ok(self).add_start(state)
     }
 
-    fn add_final(self, state: usize) -> Result<DFABuilder> {
+    fn add_final(self, state: usize) -> Result<Self::Builder> {
         Ok(self).add_final(state)
     }
 
-    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<DFABuilder> {
+    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<Self::Builder> {
         Ok(self).add_transition(symb,src,dest)
     }
 
-    fn finalize(self) -> Result<DFA> {
+    fn finalize(self) -> Result<Self::Type> {
         Ok(self).finalize()
     }
 }
@@ -235,21 +242,24 @@ impl DFABuilding for DFABuilder {
 /// to chain the return value of the DFABuilder instead of unwrapping them
 /// at each stage of the building process.
 impl DFABuilding for Result<DFABuilder> {
-    fn add_start(self, state: usize) -> Result<DFABuilder> {
+    type Type = DFA;
+    type Builder = DFABuilder;
+
+    fn add_start(self, state: usize) -> Result<Self::Builder> {
         self.map(|mut dfa| {
             dfa.start = Some(state);
             dfa
         })
     }
 
-    fn add_final(self, state: usize) -> Result<DFABuilder> {
+    fn add_final(self, state: usize) -> Result<Self::Builder> {
         self.map(|mut dfa| {
             dfa.finals.insert(state);
             dfa
         })
     }
 
-    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<DFABuilder> {
+    fn add_transition(self, symb: char, src: usize, dest: usize) -> Result<Self::Builder> {
         self.and_then(|mut dfa| {
             if dfa.transitions.insert((symb,src), dest).is_some() {
                 return Err(DFAError::DuplicatedTransition(symb,src));
@@ -258,7 +268,7 @@ impl DFABuilding for Result<DFABuilder> {
         })
     }
 
-    fn finalize(self) -> Result<DFA> {
+    fn finalize(self) -> Result<Self::Type> {
         self.and_then(|dfa| {
             if dfa.start.is_none() {
                 Err(DFAError::MissingStartingState)
