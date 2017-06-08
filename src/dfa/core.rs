@@ -156,11 +156,13 @@ struct Symbol( char );
 /// ```
 ///
 #[derive(Debug)]
+#[must_use="builders need to be built with .finalize() method"]
 pub struct DFABuilder {
     transitions : HashMap<(char,usize),usize>,
     start       : Option<usize>,
     finals      : HashSet<usize>,
 }
+
 
 /// Alias for result::Result<T,DFAError>.
 pub type Result<T> = result::Result<T,DFAError>;

@@ -5,6 +5,7 @@
 // http://opensource.org/licenses/MIT>, at.your option.
 // This file may not be copied, modified, or distributed
 // except according to those terms.
+#[deny(unused_must_use)]
 
 extern crate automaton;
 
@@ -21,7 +22,7 @@ fn main() {
         .add_transition('t', 2, 3)
         .add_transition('o', 3, 0)
         .finalize();
-
+    ;
     match dfa {
         Ok(dfa) => {
             println!("{}", dfa);
