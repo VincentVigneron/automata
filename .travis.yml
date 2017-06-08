@@ -14,7 +14,7 @@ rust:
 
 script:
     - cargo build --verbose
-    - cargo test --verbose --no-run
+    - cargo test --verbose
 
 
 addons:
