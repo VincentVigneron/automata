@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `NFABuilding` trait in crate `automaton`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, NFABuilding">
+
+    <title>automaton::nfa::core::NFABuilding - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc trait">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'>Trait NFABuilding</p><div class="block items"><ul><li><a href="#required-methods">Required Methods</a></li><li><a href="#implementors">Implementors</a></li></ul></div><p class='location'><a href='../../index.html'>automaton</a>::<wbr><a href='../index.html'>nfa</a>::<wbr><a href='index.html'>core</a></p><script>window.sidebarCurrent = {name: 'NFABuilding', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Trait <a href='../../index.html'>automaton</a>::<wbr><a href='../index.html'>nfa</a>::<wbr><a href='index.html'>core</a>::<wbr><a class="trait" href=''>NFABuilding</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../../src/automaton/nfa/core.rs.html#149-173' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait NFABuilding {
+    fn <a href='#tymethod.add_start' class='fnname'>add_start</a>(self, state: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; <a class="type" href="../../../automaton/nfa/core/type.Result.html" title="type automaton::nfa::core::Result">Result</a>&lt;<a class="struct" href="../../../automaton/nfa/core/struct.NFABuilder.html" title="struct automaton::nfa::core::NFABuilder">NFABuilder</a>&gt;;
+<div class='item-spacer'></div>    fn <a href='#tymethod.add_final' class='fnname'>add_final</a>(self, state: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; <a class="type" href="../../../automaton/nfa/core/type.Result.html" title="type automaton::nfa::core::Result">Result</a>&lt;<a class="struct" href="../../../automaton/nfa/core/struct.NFABuilder.html" title="struct automaton::nfa::core::NFABuilder">NFABuilder</a>&gt;;
+<div class='item-spacer'></div>    fn <a href='#tymethod.add_transition' class='fnname'>add_transition</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;symb: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;src: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dest: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a><br>&nbsp;&nbsp;&nbsp;&nbsp;) -&gt; <a class="type" href="../../../automaton/nfa/core/type.Result.html" title="type automaton::nfa::core::Result">Result</a>&lt;<a class="struct" href="../../../automaton/nfa/core/struct.NFABuilder.html" title="struct automaton::nfa::core::NFABuilder">NFABuilder</a>&gt;;
+<div class='item-spacer'></div>    fn <a href='#tymethod.finalize' class='fnname'>finalize</a>(self) -&gt; <a class="type" href="../../../automaton/nfa/core/type.Result.html" title="type automaton::nfa::core::Result">Result</a>&lt;<a class="struct" href="../../../automaton/nfa/core/struct.NFA.html" title="struct automaton::nfa::core::NFA">NFA</a>&gt;;
+}</pre><div class='docblock'><p>NFABuilding is the trait assiociated to the NFABuilder type. Each NFABuilder
+should implement NFABuilding trait.</p>
+
+<p>NFABuilder can generate some errors during the building stage. For instance,
+one could try to insert a transition with two different destination states.</p>
+
+<h1 id='errors' class='section-header'><a href='#errors'>Errors</a></h1>
+<p>If self contains a NFAerror then each function should transfer this error.</p>
+</div>
+            <h2 id='required-methods' class='small-section-header'>
+              Required Methods<a href='#required-methods' class='anchor'></a>
+            </h2>
+            <div class='methods'>
+        <h3 id='tymethod.add_start' class='method'><span id='add_start.v' class='invisible'><code>fn <a href='#tymethod.add_start' class='fnname'>add_start</a>(self, state: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; <a class="type" href="../../../automaton/nfa/core/type.Result.html" title="type automaton::nfa::core::Result">Result</a>&lt;<a class="struct" href="../../../automaton/nfa/core/struct.NFABuilder.html" title="struct automaton::nfa::core::NFABuilder">NFABuilder</a>&gt;</code></span></h3><div class='docblock'><p>Add a starting state to the NFA.</p>
+
+<h1 id='errors-1' class='section-header'><a href='#errors-1'>Errors</a></h1>
+<p>In the futur will return a NFAError::DuplicatedStartingState if
+two starting states are added.</p>
+</div><h3 id='tymethod.add_final' class='method'><span id='add_final.v' class='invisible'><code>fn <a href='#tymethod.add_final' class='fnname'>add_final</a>(self, state: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; <a class="type" href="../../../automaton/nfa/core/type.Result.html" title="type automaton::nfa::core::Result">Result</a>&lt;<a class="struct" href="../../../automaton/nfa/core/struct.NFABuilder.html" title="struct automaton::nfa::core::NFABuilder">NFABuilder</a>&gt;</code></span></h3><div class='docblock'><p>Add a final state to the NFA.</p>
+</div><h3 id='tymethod.add_transition' class='method'><span id='add_transition.v' class='invisible'><code>fn <a href='#tymethod.add_transition' class='fnname'>add_transition</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;symb: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;src: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;dest: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a><br>) -&gt; <a class="type" href="../../../automaton/nfa/core/type.Result.html" title="type automaton::nfa::core::Result">Result</a>&lt;<a class="struct" href="../../../automaton/nfa/core/struct.NFABuilder.html" title="struct automaton::nfa::core::NFABuilder">NFABuilder</a>&gt;</code></span></h3><div class='docblock'><p>Add a transition to the NFA.</p>
+</div><h3 id='tymethod.finalize' class='method'><span id='finalize.v' class='invisible'><code>fn <a href='#tymethod.finalize' class='fnname'>finalize</a>(self) -&gt; <a class="type" href="../../../automaton/nfa/core/type.Result.html" title="type automaton::nfa::core::Result">Result</a>&lt;<a class="struct" href="../../../automaton/nfa/core/struct.NFA.html" title="struct automaton::nfa::core::NFA">NFA</a>&gt;</code></span></h3><div class='docblock'><p>Finalize the building of the NFA.</p>
+
+<h1 id='errors-2' class='section-header'><a href='#errors-2'>Errors</a></h1>
+<p>Return a NFAError::MissingStartingState if no starting state is specified.</p>
+
+<p>Return a NFAError::MissingFinalStates if no final state is specified.</p>
+</div></div>
+        <h2 id='implementors' class='small-section-header'>
+          Implementors<a href='#implementors' class='anchor'></a>
+        </h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl NFABuilding for <a class="struct" href="../../../automaton/nfa/core/struct.NFABuilder.html" title="struct automaton::nfa::core::NFABuilder">NFABuilder</a></code></li>
+<li><code>impl NFABuilding for <a class="type" href="../../../automaton/nfa/core/type.Result.html" title="type automaton::nfa::core::Result">Result</a>&lt;<a class="struct" href="../../../automaton/nfa/core/struct.NFABuilder.html" title="struct automaton::nfa::core::NFABuilder">NFABuilder</a>&gt;</code></li>
+</ul><script type="text/javascript" async
+                         src="../../../implementors/automaton/nfa/core/trait.NFABuilding.js">
+                 </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "automaton";
+    </script>
+    <script src="../../../main.js"></script>
+    <script defer src="../../../search-index.js"></script>
+</body>
+</html>

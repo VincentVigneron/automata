@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["NFAReaderError","Type `NFAReaderError` describes the list of errors that can occur during the parsing of a NFA file."]],"struct":[["NFAReader","Struct `NFAReader` is an empty structure that builds a `NFA` from a file or from a `&str`."]],"type":[["Result","Alias for result::Result<T,NFAReaderError>."]]});

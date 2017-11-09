@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ENFAReaderError","Type `ENFAReaderError` describes the list of errors that can occur during the parsing of a ENFA file."]],"struct":[["ENFAReader","Struct `ENFAReader` is an empty structure that builds a `ENFA` from a file or from a `&str`."]],"type":[["Result","Alias for result::Result<T,ENFAReaderError>."]]});

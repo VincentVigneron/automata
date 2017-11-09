@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["DFAReaderError","Type `DFAReaderError` describes the list of errors that can occur during the parsing of a DFA file."]],"struct":[["DFAReader","Struct `DFAReader` is an empty structure that builds a `DFA` from a file or from a `&str`."]],"type":[["Result","Alias for result::Result<T,DFAReaderError>."]]});
