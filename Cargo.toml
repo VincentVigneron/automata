@@ -6,6 +6,7 @@ authors = ["vigneron <vincent.vigneron@univ-angers.fr>"]
 [[bin]]
 doc = false
 name = "dfa"
+path = "src/main.rs"
 
 [dependencies]
 itertools = "0.4"
